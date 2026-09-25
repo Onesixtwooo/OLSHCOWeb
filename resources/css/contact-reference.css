@@ -1,0 +1,193 @@
+/* Contact reference composition */
+.contact-reference .contact-reference-header {
+  max-width: 760px;
+  margin: 0 auto 48px;
+}
+
+.contact-reference .contact-reference-header .section-badge { margin-bottom: 16px; }
+.contact-reference .contact-reference-header .section-badge svg { width: 15px; height: 15px; }
+.contact-reference .contact-reference-header .section-title { color: #0e1f59; font-size: clamp(2.7rem, 5vw, 3.8rem); letter-spacing: -0.05em; }
+.contact-reference .contact-reference-header .section-subtitle { max-width: 680px; margin: 12px auto 0; font-size: 1.06rem; }
+
+.contact-reference-grid {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.78fr) minmax(300px, 0.9fr) minmax(390px, 1.1fr);
+  gap: clamp(24px, 3vw, 44px);
+  align-items: center;
+}
+
+.contact-reference-info { align-self: stretch; padding: 26px 0 8px; }
+.contact-reference-kicker { margin-bottom: 20px; color: #8194b7; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.18em; }
+.contact-reference-kicker::before { content: ''; display: inline-block; width: 50px; height: 1px; margin: 0 14px 3px 0; background: #6fa2ff; }
+.contact-reference-info h3 { color: #0e1f59; font-size: clamp(2.2rem, 3.3vw, 3.05rem); line-height: 1; letter-spacing: -0.05em; }
+.contact-reference-info > p { margin: 18px 0 24px; color: #5d7092; font-size: 0.9rem; line-height: 1.55; }
+
+.contact-reference-details { display: flex; flex-direction: column; gap: 12px; }
+.contact-reference-detail { display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 10px 14px; border: 1px solid #edf2fa; border-radius: 18px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 8px 22px rgba(36, 82, 147, 0.04); }
+.contact-reference-detail-icon { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 46px; border-radius: 16px; color: var(--color-primary); background: #eaf2ff; }
+.contact-reference-detail-icon svg { width: 23px; height: 23px; }
+.contact-reference-detail small, .contact-reference-detail strong { display: block; }
+.contact-reference-detail small { margin-bottom: 3px; color: #7d9bd0; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.contact-reference-detail strong { color: #243b68; font-size: 0.83rem; line-height: 1.3; }
+
+.contact-reference-visual { position: relative; min-height: 690px; isolation: isolate; }
+.contact-reference-campus-placeholder { position: absolute; top: 42px; left: 2%; width: 96%; height: 76%; border: 8px solid rgba(255,255,255,.92); border-radius: 34px 108px 34px 108px; background: repeating-linear-gradient(135deg, rgba(148,163,184,.15) 0 2px, transparent 2px 12px), linear-gradient(145deg, #cbd5e1, #94a3b8); box-shadow: 0 24px 48px rgba(38, 83, 145, .16); transform: rotate(-2deg); }
+.contact-reference-campus-placeholder::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(71,85,105,.24)); }
+.contact-reference-welcome { position: absolute; top: 104px; left: 0; display: flex; align-items: center; gap: 10px; width: 230px; min-height: 62px; padding: 12px 14px; border-radius: 17px; color: #173b88; background: rgba(255,255,255,.96); box-shadow: 0 12px 26px rgba(27,69,133,.16); font-size: .78rem; line-height: 1.2; z-index: 2; }
+.contact-reference-welcome svg { width: 24px; height: 24px; color: var(--color-primary); }
+.contact-reference-welcome span { display:grid; place-items:center; width:28px; height:28px; margin-left:auto; border-radius:50%; color:white; background:var(--color-primary); font-size:1rem; }
+.contact-reference-map-placeholder { position:absolute; right:0; bottom:36px; display:grid; grid-template-columns:36px 1fr; column-gap:8px; align-items:center; width:205px; min-height:100px; padding:14px; border:6px solid rgba(255,255,255,.85); border-radius:22px; background: repeating-linear-gradient(45deg, rgba(147,197,253,.16) 0 2px, transparent 2px 14px), linear-gradient(145deg, #e2e8f0, #cbd5e1); box-shadow:0 15px 28px rgba(27,69,133,.14); z-index:2; }
+.contact-reference-map-pin { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; color:white; background:var(--color-primary); grid-row:span 2; }
+.contact-reference-map-pin svg { width:19px; height:19px; }
+.contact-reference-map-placeholder strong { color:#173b88; font-size:.75rem; }
+.contact-reference-map-placeholder small { color:#6b7f9f; font-size:.62rem; line-height:1.25; }
+.contact-reference-script { position:absolute; right:-6px; bottom:-2px; color:#75aaff; font-family:'Segoe Script','Bradley Hand',cursive; font-size:1.9rem; line-height:.95; transform:rotate(-7deg); z-index:3; }
+.contact-reference-script::after { content:''; display:block; width:118px; height:2px; margin:10px 0 0 13px; background:#75aaff; transform:rotate(-5deg); }
+
+.contact-reference-form { align-self: stretch; padding: 36px 34px 24px; border-radius: 28px; background: rgba(255,255,255,.94); border:1px solid #e4edfa; box-shadow:0 18px 44px rgba(31,72,133,.1); }
+.contact-reference-form-heading { display:flex; align-items:flex-start; gap:16px; margin-bottom:24px; }
+.contact-reference-form-heading > span { display:grid; place-items:center; width:58px; height:58px; flex:0 0 58px; border-radius:18px; color:var(--color-primary); background:#eaf2ff; }
+.contact-reference-form-heading svg { width:31px; height:31px; }
+.contact-reference-form-heading h3 { margin:3px 0 5px; color:#102b70; font-size:1.35rem; line-height:1.2; }
+.contact-reference-form-heading p { margin:0; color:#697b9a; font-size:.8rem; line-height:1.35; }
+.contact-reference-form .contact-form { gap:15px; }
+.contact-reference-form .form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.contact-reference-form .form-group { min-width: 0; }
+.contact-reference-form .form-label { color:#30466e; font-size:.75rem; }
+.contact-reference-form .form-input, .contact-reference-form .form-textarea { width: 100%; max-width: 100%; min-width: 0; padding:12px 15px; border-color:#d7e3f5; border-radius:9px; background:#fafdff; font-size:.84rem; }
+.contact-reference-form .form-textarea { min-height:92px; }
+.contact-reference-form select { appearance:auto; }
+.contact-reference-submit { width:100%; justify-content:center; border-radius:999px; padding:13px 20px; }
+.contact-reference-response { display:block; color:#8495b2; font-size:.68rem; text-align:center; }
+.contact-reference-footer { margin:40px 0 0 auto; color:#91a3c1; font-size:.65rem; letter-spacing:.08em; text-align:right; }
+
+@media (max-width: 1100px) {
+  .contact-reference-grid { grid-template-columns: minmax(245px, .8fr) minmax(280px, .85fr) minmax(350px, 1.1fr); gap:20px; }
+  .contact-reference-detail strong { font-size:.74rem; }
+  .contact-reference-form { padding-inline:24px; }
+}
+
+@media (max-width: 900px) {
+  .contact-reference-grid { grid-template-columns: 1fr 1fr; }
+  .contact-reference-info { grid-column:1; }
+  .contact-reference-visual { grid-column:2; }
+  .contact-reference-form { grid-column:1 / -1; }
+}
+
+@media (max-width: 620px) {
+  .contact-reference .contact-reference-header { margin-bottom:32px; }
+  .contact-reference-grid { display:flex; flex-direction:column; gap:30px; }
+  .contact-reference-info, .contact-reference-visual, .contact-reference-form { width:100%; }
+  .contact-reference-info { padding-top:0; }
+  .contact-reference-visual { min-height:560px; }
+  .contact-reference-campus-placeholder { top:24px; }
+  .contact-reference-welcome { top:72px; }
+  .contact-reference-map-placeholder { bottom:18px; }
+  .contact-reference-script { bottom:-1px; font-size:1.7rem; }
+  .contact-reference-form { padding:26px 20px 20px; }
+  .contact-reference-form .form-row { grid-template-columns:1fr; }
+  .contact-reference-footer { margin-top:28px; text-align:left; }
+}
+
+/* =============================================
+   MAROON THEME — CONTACT REFERENCE
+   ============================================= */
+[data-theme="maroon"] .contact-reference .contact-reference-header .section-title {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-kicker {
+  color: #9f1239 !important;
+}
+
+[data-theme="maroon"] .contact-reference-kicker::before {
+  background: #f43f5e !important;
+}
+
+[data-theme="maroon"] .contact-reference-info h3 {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-detail {
+  border-color: #fecdd3 !important;
+  box-shadow: 0 8px 22px rgba(76, 5, 25, 0.05) !important;
+}
+
+[data-theme="maroon"] .contact-reference-detail-icon {
+  background: #ffe4e6 !important;
+  color: #800000 !important;
+}
+
+[data-theme="maroon"] .contact-reference-detail small {
+  color: #9f1239 !important;
+}
+
+[data-theme="maroon"] .contact-reference-detail strong {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-welcome {
+  color: #4c0519 !important;
+  box-shadow: 0 12px 26px rgba(128, 0, 0, 0.18) !important;
+}
+
+[data-theme="maroon"] .contact-reference-welcome svg {
+  color: #800000 !important;
+}
+
+[data-theme="maroon"] .contact-reference-welcome span {
+  background: #800000 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="maroon"] .contact-reference-map-pin {
+  background: #800000 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="maroon"] .contact-reference-map-placeholder strong {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-map-placeholder {
+  box-shadow: 0 15px 28px rgba(76, 5, 25, 0.14) !important;
+}
+
+[data-theme="maroon"] .contact-reference-script {
+  color: #f43f5e !important;
+}
+
+[data-theme="maroon"] .contact-reference-script::after {
+  background: #f43f5e !important;
+}
+
+[data-theme="maroon"] .contact-reference-form {
+  border-color: #fecdd3 !important;
+  box-shadow: 0 18px 44px rgba(76, 5, 25, 0.1) !important;
+}
+
+[data-theme="maroon"] .contact-reference-form-heading > span {
+  background: #ffe4e6 !important;
+  color: #800000 !important;
+}
+
+[data-theme="maroon"] .contact-reference-form-heading h3 {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-form .form-label {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .contact-reference-form .form-input,
+[data-theme="maroon"] .contact-reference-form .form-textarea {
+  border-color: #fecdd3 !important;
+  background: #fffbfc !important;
+}
+
+[data-theme="maroon"] .contact-reference-form .form-input:focus,
+[data-theme="maroon"] .contact-reference-form .form-textarea:focus {
+  border-color: #800000 !important;
+  box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.1) !important;
+}
+

@@ -1,0 +1,96 @@
+/* College department carousel */
+.college-carousel {
+  position: relative;
+}
+
+.college-carousel-viewport {
+  width: 100%;
+  overflow: hidden;
+  padding: 8px 0 16px;
+}
+
+.college-carousel-track {
+  display: flex;
+  gap: 32px;
+  width: max-content;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.college-carousel .academic-card {
+  flex: 0 0 var(--college-card-width, calc((100vw - 160px) / 4));
+  min-height: 460px;
+  width: var(--college-card-width, calc((100vw - 160px) / 4));
+}
+
+.college-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.college-carousel-status {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.college-carousel-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.college-carousel-buttons button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-gray);
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform var(--transition-fast), color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.college-carousel-buttons button:hover,
+.college-carousel-buttons button:focus-visible {
+  border-color: var(--color-primary-light);
+  color: white;
+  background: var(--color-primary);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+@media (max-width: 1024px) {
+  .college-carousel-track {
+    gap: 24px;
+  }
+
+  .college-carousel .academic-card {
+    flex-basis: var(--college-card-width, calc((100vw - 88px) / 2));
+    width: var(--college-card-width, calc((100vw - 88px) / 2));
+  }
+}
+
+@media (max-width: 768px) {
+  .college-carousel-track {
+    gap: 16px;
+  }
+
+  .college-carousel .academic-card {
+    flex-basis: var(--college-card-width, calc(100vw - 48px));
+    width: var(--college-card-width, calc(100vw - 48px));
+    min-height: 440px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .college-carousel-track {
+    transition: none;
+  }
+}

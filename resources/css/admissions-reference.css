@@ -1,0 +1,348 @@
+/* Admissions reference composition */
+.admissions-reference .admissions-reference-header {
+  max-width: 760px;
+  margin: 0 auto 46px;
+}
+
+.admissions-reference .admissions-reference-header .section-badge {
+  margin-bottom: 16px;
+}
+
+.admissions-reference .admissions-reference-header .section-title {
+  color: #0e1f59;
+  font-size: clamp(2.7rem, 5vw, 3.8rem);
+  letter-spacing: -0.05em;
+}
+
+.admissions-reference .admissions-reference-header .section-subtitle {
+  max-width: 680px;
+  margin: 12px auto 0;
+  font-size: 1.06rem;
+}
+
+.admissions-reference .admissions-layout {
+  grid-template-columns: minmax(350px, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(34px, 5vw, 68px);
+  align-items: stretch;
+}
+
+.admissions-reference .admissions-spotlight {
+  min-height: 620px;
+  padding: 44px 42px;
+  border-radius: 32px 32px 46px 46px;
+  background: linear-gradient(145deg, #0b2d72 0%, #164da8 70%, #2d6fe0 100%);
+  box-shadow: 0 24px 54px rgba(18, 60, 133, 0.24);
+}
+
+.admissions-reference .admissions-spotlight::before,
+.admissions-reference .admissions-spotlight::after {
+  border-color: rgba(191, 219, 254, 0.22);
+}
+
+.admissions-reference .admissions-spotlight::before { right: -170px; top: 36px; }
+.admissions-reference .admissions-spotlight::after { right: -120px; top: 88px; }
+
+.admissions-spotlight-placeholder {
+  position: absolute;
+  right: -8%;
+  bottom: -5%;
+  width: 115%;
+  height: 52%;
+  border-radius: 46% 0 0 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 52%),
+    repeating-linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0 2px, transparent 2px 12px),
+    linear-gradient(145deg, #9ca3af, #64748b);
+  opacity: 0.74;
+  transform: rotate(-4deg);
+}
+
+.admissions-reference .spotlight-eyebrow,
+.admissions-reference .admissions-spotlight h3,
+.admissions-reference .admissions-spotlight > p,
+.admissions-reference .spotlight-meta,
+.admissions-reference .admissions-spotlight-button,
+.admissions-reference .admissions-faith-badge {
+  position: relative;
+  z-index: 2;
+}
+
+.admissions-reference .spotlight-eyebrow { margin-bottom: 27px; }
+.admissions-reference .admissions-spotlight h3 { max-width: 350px; font-size: clamp(2.8rem, 5vw, 4.3rem); line-height: 0.98; letter-spacing: -0.055em; }
+.admissions-reference .admissions-spotlight > p { max-width: 330px; margin-top: 24px; font-size: 1rem; }
+.admissions-reference .spotlight-meta { margin-top: auto; }
+.admissions-reference .spotlight-meta-number { font-size: 2.55rem; }
+
+.admissions-reference .admissions-spotlight-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  margin-top: 22px;
+  padding: 12px 18px 12px 22px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.admissions-reference .admissions-spotlight-button svg { width: 20px; height: 20px; }
+
+.admissions-faith-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 176px;
+  min-height: 104px;
+  margin-top: 26px;
+  margin-left: 0;
+  padding: 17px 16px;
+  border-radius: 20px;
+  color: #183d88;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 28px rgba(4, 30, 79, 0.2);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.admissions-faith-badge svg { width: 25px; height: 25px; color: var(--color-primary); flex: 0 0 25px; }
+.admissions-faith-badge strong { font-size: 0.82rem; }
+
+.admissions-reference .admissions-steps-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding: 0 0 0 0;
+}
+
+.admissions-reference .admissions-steps-grid::before {
+  content: '';
+  position: absolute;
+  left: 31px;
+  top: 56px;
+  bottom: 56px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, #7fb0ff 0 4px, transparent 4px 10px);
+  opacity: 0.9;
+}
+
+.admissions-reference .admission-step-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 144px;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+  z-index: 1;
+}
+
+.admissions-reference .admission-step-card:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.admission-step-marker {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border: 6px solid #f1f6ff;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: #dceaff;
+  box-shadow: 0 0 0 1px #c9ddff;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.admission-step-card-inner {
+  display: grid;
+  grid-template-columns: 82px 1fr 40px;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  min-height: 144px;
+  padding: 24px 22px 24px 24px;
+  border: 1px solid #dbe8fb;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 30px rgba(33, 75, 139, 0.06);
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.admission-step-card:hover .admission-step-card-inner,
+.admission-step-card:focus-within .admission-step-card-inner {
+  transform: translateY(-4px);
+  border-color: #a9ccff;
+  box-shadow: 0 16px 30px rgba(33, 75, 139, 0.12);
+}
+
+.admission-step-icon {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  color: var(--color-primary);
+  background: #edf4ff;
+}
+
+.admission-step-icon svg { width: 34px; height: 34px; }
+.admission-step-copy h3 { margin: 0 0 7px; color: #102c70; font-size: 1.12rem; line-height: 1.25; }
+.admission-step-copy p { margin: 0; color: #617394; font-size: 0.88rem; line-height: 1.55; }
+
+.admission-step-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c8ddff;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: #f4f8ff;
+}
+
+.admission-step-arrow svg { width: 20px; height: 20px; }
+
+.admissions-reference-footer {
+  margin: 44px 0 0 auto;
+  color: #91a3c1;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+@media (max-width: 1024px) {
+  .admissions-reference .admissions-layout { grid-template-columns: 1fr; }
+  .admissions-reference .admissions-spotlight { min-height: 520px; }
+  .admissions-reference .admissions-spotlight h3 { font-size: clamp(2.7rem, 7vw, 4rem); }
+}
+
+@media (max-width: 640px) {
+  .admissions-reference .admissions-reference-header { margin-bottom: 34px; }
+  .admissions-reference .admissions-spotlight { min-height: 520px; padding: 34px 28px; }
+  .admissions-reference .admissions-spotlight h3 { font-size: 3rem; }
+  .admissions-faith-badge { margin-left: 0; }
+  .admissions-reference .admissions-steps-grid::before { left: 24px; }
+  .admissions-reference .admission-step-card { gap: 10px; align-items: flex-start; }
+  .admission-step-marker { width: 50px; height: 50px; flex-basis: 50px; border-width: 4px; font-size: 0.92rem; }
+  .admission-step-card-inner { grid-template-columns: 48px 1fr; gap: 12px; padding: 18px 16px; }
+  .admission-step-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .admission-step-icon svg { width: 25px; height: 25px; }
+  .admission-step-copy h3 { font-size: 0.98rem; }
+  .admission-step-copy p { font-size: 0.78rem; }
+  .admission-step-arrow { display: none; }
+  .admissions-reference-footer { margin-top: 30px; text-align: left; }
+}
+
+/* =============================================
+   MAROON THEME — ADMISSIONS REFERENCE
+   ============================================= */
+[data-theme="maroon"] .admissions-reference .admissions-reference-header .section-title {
+  color: #4c0519;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight {
+  background: linear-gradient(145deg, #3d020e 0%, #66051a 50%, #8b0000 100%) !important;
+  box-shadow: 0 24px 54px rgba(76, 5, 25, 0.35) !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight::before,
+[data-theme="maroon"] .admissions-reference .admissions-spotlight::after {
+  border-color: rgba(254, 205, 211, 0.25) !important;
+}
+
+[data-theme="maroon"] .admissions-spotlight-placeholder {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent 52%),
+    repeating-linear-gradient(135deg, rgba(159, 18, 57, 0.15) 0 2px, transparent 2px 12px),
+    linear-gradient(145deg, #4c0519, #2e020d) !important;
+}
+
+[data-theme="maroon"] .admissions-reference .spotlight-eyebrow {
+  color: #fecdd3 !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight h3 {
+  color: #ffffff !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight > p,
+[data-theme="maroon"] .admissions-reference .spotlight-meta {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight-button {
+  background: #ffffff !important;
+  color: #800000 !important;
+  box-shadow: 0 8px 20px rgba(60, 2, 12, 0.28) !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-spotlight-button:hover {
+  background: #ffe4e6 !important;
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .admissions-faith-badge {
+  color: #4c0519 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 14px 28px rgba(60, 2, 12, 0.22) !important;
+}
+
+[data-theme="maroon"] .admissions-faith-badge svg {
+  color: #800000 !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admissions-steps-grid::before {
+  background: repeating-linear-gradient(to bottom, #f43f5e 0 4px, transparent 4px 10px) !important;
+}
+
+[data-theme="maroon"] .admission-step-marker {
+  border-color: #fff1f2 !important;
+  color: #800000 !important;
+  background: #ffe4e6 !important;
+  box-shadow: 0 0 0 1px #fecdd3 !important;
+}
+
+[data-theme="maroon"] .admission-step-card-inner {
+  border-color: #fecdd3 !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 12px 30px rgba(76, 5, 25, 0.05) !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admission-step-card:hover .admission-step-card-inner,
+[data-theme="maroon"] .admissions-reference .admission-step-card:focus-within .admission-step-card-inner {
+  border-color: #f43f5e !important;
+  box-shadow: 0 16px 30px rgba(128, 0, 0, 0.14) !important;
+}
+
+[data-theme="maroon"] .admission-step-icon {
+  color: #800000 !important;
+  background: #ffe4e6 !important;
+}
+
+[data-theme="maroon"] .admission-step-copy h3 {
+  color: #4c0519 !important;
+}
+
+[data-theme="maroon"] .admission-step-arrow {
+  border-color: #fecdd3 !important;
+  color: #800000 !important;
+  background: #fff5f6 !important;
+}
+
+[data-theme="maroon"] .admissions-reference .admission-step-card:hover .admission-step-arrow {
+  background: #800000 !important;
+  color: #ffffff !important;
+  border-color: #800000 !important;
+}
+
+[data-theme="maroon"] .admissions-reference-footer {
+  color: #9f1239 !important;
+}
+
