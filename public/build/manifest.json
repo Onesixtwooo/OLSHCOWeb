@@ -1,0 +1,30 @@
+{
+  "_homepageContent-CAhygVzZ.js": {
+    "file": "assets/homepageContent-CAhygVzZ.js",
+    "name": "homepageContent"
+  },
+  "resources/js/admin.jsx": {
+    "file": "assets/admin-CwheT0iq.js",
+    "name": "admin",
+    "src": "resources/js/admin.jsx",
+    "isEntry": true,
+    "imports": [
+      "_homepageContent-CAhygVzZ.js"
+    ],
+    "css": [
+      "assets/admin-DaSv61U-.css"
+    ]
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-CmmSZ-yH.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true,
+    "imports": [
+      "_homepageContent-CAhygVzZ.js"
+    ],
+    "css": [
+      "assets/app-DpNYmBUJ.css"
+    ]
+  }
+}
