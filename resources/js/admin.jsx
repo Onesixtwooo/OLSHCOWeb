@@ -1259,9 +1259,21 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         isOpen={!!openSections.values}
         onToggle={toggleSection}
       >
+        <div className="admin-field hero-editor-full">
+          <RichTextEditor
+            label="Core Values Text"
+            value={value.coreValuesText ?? value.coreValuesTagline ?? ''}
+            onChange={set('coreValuesText')}
+            placeholder="Add supporting text for the core values..."
+          />
+        </div>
         <label className="admin-field">
-          <span>Core Values Tagline</span>
-          <input value={value.coreValuesTagline || ''} onChange={(e) => set('coreValuesTagline')(e.target.value)} placeholder="ROOTED IN FAITH.\nLIVING THE VALUES." />
+          <span>Core Values Text Alignment</span>
+          <select value={value.coreValuesTextAlign || 'center'} onChange={(e) => set('coreValuesTextAlign')(e.target.value)}>
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
         </label>
 
         <div className="admin-array" style={{ border: 'none', padding: 0, background: 'transparent' }}>

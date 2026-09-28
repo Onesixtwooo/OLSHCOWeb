@@ -61,6 +61,13 @@ export default function Navbar({ site = {} }) {
     };
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   const handleNavClick = (href) => {
     setMobileOpen(false);
     if (!href.startsWith('#') || isSubPage) {
@@ -109,6 +116,8 @@ export default function Navbar({ site = {} }) {
           className={`navbar-toggle${mobileOpen ? ' open' : ''}`}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
         >
           <span></span>
           <span></span>
@@ -116,11 +125,11 @@ export default function Navbar({ site = {} }) {
         </button>
       </div>
 
-      <div className={`navbar-mobile${mobileOpen ? ' open' : ''}`}>
+      <div className={`navbar-mobile${mobileOpen ? ' open' : ''}`} id="mobile-navigation">
         {NAV_ITEMS.map((item) => (
           <a
             key={item.href}
-            className="navbar-mobile-link"
+            className={`navbar-mobile-link${(isSubPage ? navHref(item.href) === (isAboutPage ? '/about' : '/services') : activeSection === item.href.slice(1)) ? ' active' : ''}`}
             href={navHref(item.href)}
             onClick={(e) => { e.preventDefault(); handleNavClick(item.href); }}
           >
@@ -128,10 +137,9 @@ export default function Navbar({ site = {} }) {
           </a>
         ))}
         <a
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary btn-sm navbar-mobile-cta"
           href={navHref('#admissions')}
           onClick={(e) => { e.preventDefault(); handleNavClick('#admissions'); }}
-          style={{ marginTop: '16px' }}
         >
           {site.enrollCta || 'Enroll Now'}
         </a>

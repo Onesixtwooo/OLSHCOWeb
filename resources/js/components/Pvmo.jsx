@@ -86,7 +86,10 @@ export default function Pvmo({ content = {} }) {
   const mission = content.mission || 'To provide quality, accessible, and faith-centered education that empowers learners with competence, character, and commitment to community.';
   const missionKicker = content.missionKicker || 'PEOPLE WITH PURPOSE';
 
-  const coreValuesTagline = content.coreValuesTagline || 'ROOTED IN FAITH.\nLIVING THE VALUES.';
+  const coreValuesText = content.coreValuesText || content.coreValuesTagline || 'ROOTED IN FAITH.\nLIVING THE VALUES.';
+  const coreValuesTextAlign = ['left', 'center', 'right'].includes(content.coreValuesTextAlign)
+    ? content.coreValuesTextAlign
+    : 'center';
 
   const coreValues = Array.isArray(content.coreValues) ? content.coreValues : [];
 
@@ -219,11 +222,7 @@ export default function Pvmo({ content = {} }) {
                   </span>
                   <h3 className="pvmo-values-title">Core Values</h3>
                 </div>
-                <div className="pvmo-values-tagline">
-                  {coreValuesTagline.split('\n').map((line, idx) => (
-                    <span key={idx}>{line}</span>
-                  ))}
-                </div>
+                <RichText as="div" className={`pvmo-values-text pvmo-values-text-${coreValuesTextAlign}`} content={coreValuesText} />
               </div>
 
               <div className="pvmo-values-pills">

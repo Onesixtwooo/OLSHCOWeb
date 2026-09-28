@@ -1,30 +1,30 @@
 {
-  "_homepageContent-CAhygVzZ.js": {
-    "file": "assets/homepageContent-CAhygVzZ.js",
+  "_homepageContent-DwpcCuRF.js": {
+    "file": "assets/homepageContent-DwpcCuRF.js",
     "name": "homepageContent"
   },
   "resources/js/admin.jsx": {
-    "file": "assets/admin-CwheT0iq.js",
+    "file": "assets/admin-CaR6j3_G.js",
     "name": "admin",
     "src": "resources/js/admin.jsx",
     "isEntry": true,
     "imports": [
-      "_homepageContent-CAhygVzZ.js"
+      "_homepageContent-DwpcCuRF.js"
     ],
     "css": [
       "assets/admin-DaSv61U-.css"
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CmmSZ-yH.js",
+    "file": "assets/app-DbfTAvgq.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
     "imports": [
-      "_homepageContent-CAhygVzZ.js"
+      "_homepageContent-DwpcCuRF.js"
     ],
     "css": [
-      "assets/app-DpNYmBUJ.css"
+      "assets/app-C6PWuCgv.css"
     ]
   }
 }

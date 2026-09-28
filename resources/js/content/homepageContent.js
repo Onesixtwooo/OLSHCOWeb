@@ -82,7 +82,8 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
     visionKicker: 'A BRIGHTER TOMORROW',
     mission: 'To provide quality, accessible, and faith-centered education that empowers learners with competence, character, and commitment to community.',
     missionKicker: 'PEOPLE WITH PURPOSE',
-    coreValuesTagline: 'ROOTED IN FAITH.\nLIVING THE VALUES.',
+    coreValuesText: 'ROOTED IN FAITH.\nLIVING THE VALUES.',
+    coreValuesTextAlign: 'center',
     coreValues: [
       { title: 'Faith', description: "Anchored in God's love" },
       { title: 'Excellence', description: 'Striving for the best' },

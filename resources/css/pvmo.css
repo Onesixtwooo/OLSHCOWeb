@@ -428,17 +428,38 @@
   letter-spacing: -0.02em;
 }
 
-.pvmo-values-tagline {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: #8da2bd;
-  text-transform: uppercase;
-  line-height: 1.35;
+.pvmo-values-text {
+  width: min(46%, 330px);
+  color: #667b98;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.pvmo-values-text-left {
+  text-align: left;
+}
+
+.pvmo-values-text-right {
   text-align: right;
+}
+
+.pvmo-values-text p {
+  margin: 0;
+}
+
+.pvmo-values-text strong {
+  color: #0b2253;
+}
+
+.pvmo-values-text em {
+  color: #365a8a;
+}
+
+/* Keep multi-line plain text compact while allowing rich text paragraphs. */
+.pvmo-values-text br {
+  line-height: 1.35;
 }
 
 .pvmo-values-pills {
@@ -581,6 +602,16 @@
 
   .pvmo-philo-content {
     width: 100%;
+  }
+
+  .pvmo-values-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pvmo-values-text {
+    width: 100%;
+    max-width: none;
   }
 }
 
