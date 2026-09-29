@@ -7,7 +7,7 @@
     <meta name="description" content="Our Lady of the Sacred Heart College — A Catholic school community nurturing faith, inspiring excellence, and building compassionate leaders. Enroll now for Elementary, Junior High, and Senior High School.">
     <meta name="keywords" content="OLSHCO, Catholic school, Sacred Heart, education, enrollment, elementary, high school, senior high, Philippines">
 
-    <title>{{ $pageTitle ?? 'OLSHCO ? Our Lady of the Sacred Heart College' }}</title>
+    <title>{{ $pageTitle ?? 'OLSHCO' }}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/images/logo.png">
