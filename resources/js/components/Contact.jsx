@@ -15,12 +15,40 @@ function MailIcon() {
 
 export default function Contact({ content = {} }) {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+  const [formStatus, setFormStatus] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
   const details = content.details || [];
+  const mapEmbedUrl = typeof content.mapEmbedUrl === 'string' ? content.mapEmbedUrl.trim() : '';
+  const mapLinkUrl = typeof content.mapLinkUrl === 'string' ? content.mapLinkUrl.trim() : '';
+  const hasMapEmbed = /^https?:\/\//i.test(mapEmbedUrl);
+  const hasMapLink = /^https?:\/\//i.test(mapLinkUrl);
   const handleChange = (event) => setFormData({ ...formData, [event.target.name]: event.target.value });
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+    if (isSubmitting) return;
+    setFormStatus('');
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/contact/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+        },
+        body: JSON.stringify({ ...formData, website: honeypot }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(response.status === 429 ? 'Too many messages. Please try again later.' : (data.message || 'Unable to send your message.'));
+      setFormStatus(data.message || 'Thank you for your message! We will get back to you soon.');
+      setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+      setHoneypot('');
+    } catch (error) {
+      setFormStatus(error.message || 'Unable to send your message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -57,14 +85,15 @@ export default function Contact({ content = {} }) {
             </div>
           </div>
 
-          <div className="contact-reference-visual" aria-label="Campus and map image unavailable">
-            <div className="contact-reference-campus-placeholder" />
-            <div className="contact-reference-welcome"><DetailIcon type="pin" /><strong>A welcoming<br />community awaits</strong><span>→</span></div>
+          <div className="contact-reference-visual" aria-label={hasMapEmbed ? 'Campus location map' : 'Campus and map image unavailable'}>
+            {hasMapEmbed ? <div className="contact-reference-map-frame"><iframe src={mapEmbedUrl} title="Our campus location" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div> : <div className="contact-reference-campus-placeholder" />}
+            {hasMapLink ? <a className="contact-reference-welcome" href={mapLinkUrl} target="_blank" rel="noopener noreferrer" aria-label="Open our campus location in Google Maps"><DetailIcon type="pin" /><strong>A welcoming<br />community awaits</strong><span>→</span></a> : <div className="contact-reference-welcome"><DetailIcon type="pin" /><strong>A welcoming<br />community awaits</strong><span>→</span></div>}
           </div>
 
           <div className="contact-form-wrapper contact-reference-form fade-in-right">
             <div className="contact-reference-form-heading"><span><MailIcon /></span><div><h3>{content.formTitle || 'Send Us a Message'}</h3><RichText as="div" className="contact-form-desc" content={content.formDescription} defaultContent="Fill out the form below and our team will get back to you as soon as possible." /></div></div>
             <form className="contact-form" onSubmit={handleSubmit}>
+              <div className="contact-form-honeypot" aria-hidden="true"><label htmlFor="website">Website</label><input id="website" name="website" type="text" tabIndex="-1" autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></div>
               <div className="form-row">
                 <div className="form-group"><label className="form-label" htmlFor="firstName">First Name</label><input className="form-input" type="text" id="firstName" name="firstName" placeholder="Juan" value={formData.firstName} onChange={handleChange} required /></div>
                 <div className="form-group"><label className="form-label" htmlFor="lastName">Last Name</label><input className="form-input" type="text" id="lastName" name="lastName" placeholder="Dela Cruz" value={formData.lastName} onChange={handleChange} required /></div>
@@ -72,7 +101,8 @@ export default function Contact({ content = {} }) {
               <div className="form-group"><label className="form-label" htmlFor="email">Email Address</label><input className="form-input" type="email" id="email" name="email" placeholder="juan@example.com" value={formData.email} onChange={handleChange} required /></div>
               <div className="form-group"><label className="form-label" htmlFor="subject">Subject</label><select className="form-input" id="subject" name="subject" value={formData.subject} onChange={handleChange} required><option value="" disabled>Select a topic</option><option>Enrollment Inquiry</option><option>Academic Programs</option><option>Campus Visit</option><option>General Question</option></select></div>
               <div className="form-group"><label className="form-label" htmlFor="message">Message</label><textarea className="form-textarea" id="message" name="message" placeholder="Tell us how we can help you..." value={formData.message} onChange={handleChange} required /></div>
-              <button type="submit" className="btn btn-primary contact-reference-submit">Send Message <svg className="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
+              <button type="submit" className="btn btn-primary contact-reference-submit" disabled={isSubmitting}>{isSubmitting ? 'Sending…' : 'Send Message'} {!isSubmitting && <svg className="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>}</button>
+              {formStatus && <small className="contact-reference-form-status" role="status">{formStatus}</small>}
               <RichText
                 as="small"
                 className="contact-reference-response"

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { sanitizeHtml } from './RichText';
 
 // Modern SVG Icons for the toolbar
 const Icons = {
@@ -112,7 +113,7 @@ export default function RichTextEditor({
         isInternalChangeRef.current = false;
         return;
       }
-      const incomingHtml = value ?? '';
+      const incomingHtml = sanitizeHtml(value ?? '');
       if (editorRef.current.innerHTML !== incomingHtml) {
         editorRef.current.innerHTML = incomingHtml;
       }
@@ -153,7 +154,7 @@ export default function RichTextEditor({
 
   const handleInput = () => {
     if (!editorRef.current) return;
-    let html = editorRef.current.innerHTML;
+    let html = sanitizeHtml(editorRef.current.innerHTML);
     // Normalize empty content
     if (html === '<p><br></p>' || html === '<br>' || html === '<div><br></div>') {
       html = '';

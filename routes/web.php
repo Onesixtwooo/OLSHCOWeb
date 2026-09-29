@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ContactController;
 
 Route::get('/', function () {
     $setting = \App\Models\PageSetting::query()->where('key', 'homepage')->first();
@@ -48,6 +49,9 @@ Route::get('/services/{office}', function (string $office) {
 })->name('services.office');
 
 Route::get('/homepage-content', [AdminController::class, 'publicContent'])->name('homepage.content');
+Route::post('/contact/messages', [ContactController::class, 'store'])
+    ->middleware('throttle:contact-messages')
+    ->name('contact.messages.store');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/setup', [AdminController::class, 'showSetup'])->name('setup');

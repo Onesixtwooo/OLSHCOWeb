@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Our Lady of the Sacred Heart College — A Catholic school community nurturing faith, inspiring excellence, and building compassionate leaders. Enroll now for Elementary, Junior High, and Senior High School.">
     <meta name="keywords" content="OLSHCO, Catholic school, Sacred Heart, education, enrollment, elementary, high school, senior high, Philippines">
 

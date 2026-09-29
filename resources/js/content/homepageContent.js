@@ -181,6 +181,8 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
     description: "Have questions? We'd love to hear from you. Reach out and our team will respond promptly.",
     introTitle: "Let's Connect",
     introDescription: "Whether you're a prospective student, parent, or community member, we're here to help. Visit our campus or get in touch through any of the channels below.",
+    mapEmbedUrl: '',
+    mapLinkUrl: '',
     details: [
       { label: 'Address', value: 'OLSHCO Campus, Sacred Heart Avenue, City', icon: 'pin' },
       { label: 'Phone', value: '(02) 8888-OLSH', icon: 'phone' },
