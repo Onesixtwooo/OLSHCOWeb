@@ -107,6 +107,24 @@ class AdminController extends Controller
         return response()->json(['message' => 'Homepage changes saved.']);
     }
 
+    public function updateMaintenance(Request $request): JsonResponse
+    {
+        $maintenance = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'title' => ['nullable', 'string', 'max:120'],
+            'message' => ['nullable', 'string', 'max:1000'],
+        ]);
+        $maintenance['title'] = $maintenance['title'] ?? '';
+        $maintenance['message'] = $maintenance['message'] ?? '';
+
+        $setting = PageSetting::query()->firstOrCreate(['key' => 'homepage'], ['value' => []]);
+        $content = $setting->value ?? [];
+        $content['settings']['maintenance'] = $maintenance;
+        $setting->update(['value' => $content]);
+
+        return response()->json(['message' => 'Maintenance settings saved.', 'maintenance' => $maintenance]);
+    }
+
     public function uploadProgramImage(Request $request): JsonResponse
     {
         $validated = $request->validate(['image' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192']]);

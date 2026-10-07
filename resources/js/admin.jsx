@@ -13,6 +13,7 @@ const SECTION_LABELS = {
   contact: 'Contact',
   services: 'Office Services',
   administration: 'Administration',
+  settings: 'Settings',
 };
 
 const LEGACY_HOME_ALIASES = new Set(['site', 'visibility', 'hero', 'footer', 'home']);
@@ -21,7 +22,7 @@ const LEGACY_HOME_ALIASES = new Set(['site', 'visibility', 'hero', 'footer', 'ho
 const NAV_GROUPS = [
   { label: 'Home', items: ['home'] },
   { label: 'Pages', items: ['pvmo', 'about', 'academics', 'admissions', 'services', 'contact'] },
-  { label: 'Management', items: ['administration'] },
+  { label: 'Management', items: ['administration', 'settings'] },
 ];
 
 /** All valid section keys in a flat set */
@@ -1573,6 +1574,29 @@ function ServicesEditor({ value, onChange, onImageUpload, onSave }) {
   </div>;
 }
 
+function SettingsEditor({ value = {}, onChange }) {
+  const maintenance = value.maintenance || {};
+  const update = (field, next) => onChange({ ...value, maintenance: { ...maintenance, [field]: next } });
+
+  return <div className="admin-settings-editor">
+    <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Maintenance mode</span><small>Show a temporary page to public visitors while the site is being updated.</small></div>
+      <label className="admin-toggle">
+        <input type="checkbox" checked={maintenance.enabled === true} onChange={(event) => update('enabled', event.target.checked)} />
+        <span>Enable maintenance mode</span>
+      </label>
+      <p className="admin-settings-note">When enabled and saved, all public pages show the maintenance message. The admin area stays available so you can turn it off.</p>
+    </div>
+    <div className="admin-academics-overview admin-editor-fields">
+      <div className="admin-group-label"><span>Maintenance page</span><small>Customize the text visitors will see.</small></div>
+      <label className="admin-field"><span>Heading</span><input maxLength={120} value={maintenance.title ?? ''} onChange={(event) => update('title', event.target.value)} /></label>
+      <label className="admin-field"><span>Message</span><textarea rows={4} maxLength={1000} value={maintenance.message ?? ''} onChange={(event) => update('message', event.target.value)} /></label>
+      <p className="admin-settings-note">Preview shows the last saved message even when maintenance mode is off. Visit the homepage to check whether the mode is active.</p>
+      <a className="admin-preview admin-settings-preview" href="/maintenance" target="_blank" rel="noreferrer">Preview saved maintenance page ↗</a>
+    </div>
+  </div>;
+}
+
 function AdminApp() {
   const initial = window.__OLSHCO_ADMIN_CONTENT__ || {};
   const [content, setContent] = useState(() => mergeHomepageContent(initial));
@@ -1631,6 +1655,24 @@ function AdminApp() {
     }
   };
 
+  const saveMaintenance = async () => {
+    setStatus('Saving…');
+    const maintenance = content.settings?.maintenance || {};
+    try {
+      const response = await fetch('/admin/settings/maintenance', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+        body: JSON.stringify({ enabled: maintenance.enabled === true, title: maintenance.title ?? '', message: maintenance.message ?? '' }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || `Save failed (${response.status})`);
+      setContent((current) => ({ ...current, settings: { ...current.settings, maintenance: result.maintenance } }));
+      setStatus('Saved just now');
+    } catch (error) {
+      setStatus(error.message || 'Unable to save maintenance settings');
+    }
+  };
+
   return <div className="admin-shell">
     <aside className="admin-sidebar">
       <div className="admin-brand"><img src="/images/logo.png" alt="OLSHCO logo" /><span>OLSHCO<br /><small>Homepage editor</small></span></div>
@@ -1639,7 +1681,7 @@ function AdminApp() {
         <div key={group.label}>
           <div className="admin-nav-label">{group.label}</div>
           <nav className="admin-nav">
-            {group.items.filter((key) => key === 'home' || key === 'administration' || Object.prototype.hasOwnProperty.call(content, key)).map((key) => (
+            {group.items.filter((key) => key === 'home' || key === 'administration' || key === 'settings' || Object.prototype.hasOwnProperty.call(content, key)).map((key) => (
               <a
                 key={key}
                 href={`/admin/${key}/edit`}
@@ -1654,8 +1696,8 @@ function AdminApp() {
       <form action="/admin/logout" method="POST" className="admin-logout"><input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]').content} /><button type="submit">Sign out</button></form>
     </aside>
     <main className="admin-main">
-      <header className="admin-topbar"><div><span className="admin-eyebrow">{activeGroup.toUpperCase()}</span><h1>{SECTION_LABELS[activeSection] || pretty(activeSection)}</h1></div><div className="admin-actions"><span className="admin-status">{status}</span><a href={activeSection === 'services' ? '/services' : '/'} target="_blank" rel="noreferrer" className="admin-preview">View page ↗</a><button type="button" className="admin-save" onClick={save}>Save changes</button></div></header>
-      <section className={`admin-panel ${activeSection === 'services' || activeSection === 'academics' || activeSection === 'about' || activeSection === 'admissions' || activeSection === 'contact' || activeSection === 'pvmo' || activeSection === 'administration' || activeSection === 'home' ? 'admin-panel-wide' : ''}`}><div className="admin-panel-intro"><span>{SECTION_LABELS[activeSection] || pretty(activeSection)}</span><p>{activeSection === 'home' ? 'Manage homepage hero banner, site navigation settings, section visibility, and footer.' : 'Changes are stored in the site database and appear on the public page after refresh.'}</p></div>{activeSection === 'services' ? <ServicesEditor value={activeValue} onChange={(next) => setContent({ ...content, services: next })} onImageUpload={uploadImage} onSave={(servicesValue) => save({ ...content, ...servicesValue })} /> : activeSection === 'home' ? <HomeEditor content={content} onChange={setContent} onImageUpload={uploadImage} /> : activeSection === 'academics' ? <AcademicsEditor value={activeValue} onChange={(next) => setContent({ ...content, academics: next })} onImageUpload={uploadImage} onSave={save} /> : activeSection === 'about' ? <AboutEditor value={activeValue} onChange={(next) => setContent({ ...content, about: next })} onImageUpload={uploadImage} onAudioUpload={uploadAudio} onSave={save} /> : activeSection === 'administration' ? <AdministrationEditor value={activeValue} onChange={(next) => setContent({ ...content, facultyStaff: next })} onImageUpload={uploadImage} /> : activeSection === 'admissions' ? <AdmissionsEditor value={activeValue} onChange={(next) => setContent({ ...content, admissions: next })} onSave={save} /> : activeSection === 'contact' ? <ContactEditor value={activeValue} onChange={(next) => setContent({ ...content, contact: next })} onSave={save} /> : activeSection === 'hero' ? <HeroEditor value={activeValue} onChange={(next) => setContent({ ...content, hero: next })} onImageUpload={uploadImage} /> : activeSection === 'pvmo' ? <PvmoEditor value={activeValue} onChange={(next) => setContent({ ...content, pvmo: next })} onImageUpload={uploadImage} /> : <Editor value={activeValue} onChange={(next) => setContent({ ...content, [activeSection]: next })} onImageUpload={uploadImage} />}</section>
+      <header className="admin-topbar"><div><span className="admin-eyebrow">{activeGroup.toUpperCase()}</span><h1>{SECTION_LABELS[activeSection] || pretty(activeSection)}</h1></div><div className="admin-actions"><span className="admin-status">{status}</span><a href={activeSection === 'services' ? '/services' : '/'} target="_blank" rel="noreferrer" className="admin-preview">View page ↗</a><button type="button" className="admin-save" onClick={activeSection === 'settings' ? saveMaintenance : save}>Save changes</button></div></header>
+      <section className={`admin-panel ${activeSection === 'services' || activeSection === 'academics' || activeSection === 'about' || activeSection === 'admissions' || activeSection === 'contact' || activeSection === 'pvmo' || activeSection === 'administration' || activeSection === 'home' ? 'admin-panel-wide' : ''}`}><div className="admin-panel-intro"><span>{SECTION_LABELS[activeSection] || pretty(activeSection)}</span><p>{activeSection === 'home' ? 'Manage homepage hero banner, site navigation settings, section visibility, and footer.' : 'Changes are stored in the site database and appear on the public page after refresh.'}</p></div>{activeSection === 'settings' ? <SettingsEditor value={activeValue} onChange={(next) => setContent({ ...content, settings: next })} /> : activeSection === 'services' ? <ServicesEditor value={activeValue} onChange={(next) => setContent({ ...content, services: next })} onImageUpload={uploadImage} onSave={(servicesValue) => save({ ...content, ...servicesValue })} /> : activeSection === 'home' ? <HomeEditor content={content} onChange={setContent} onImageUpload={uploadImage} /> : activeSection === 'academics' ? <AcademicsEditor value={activeValue} onChange={(next) => setContent({ ...content, academics: next })} onImageUpload={uploadImage} onSave={save} /> : activeSection === 'about' ? <AboutEditor value={activeValue} onChange={(next) => setContent({ ...content, about: next })} onImageUpload={uploadImage} onAudioUpload={uploadAudio} onSave={save} /> : activeSection === 'administration' ? <AdministrationEditor value={activeValue} onChange={(next) => setContent({ ...content, facultyStaff: next })} onImageUpload={uploadImage} /> : activeSection === 'admissions' ? <AdmissionsEditor value={activeValue} onChange={(next) => setContent({ ...content, admissions: next })} onSave={save} /> : activeSection === 'contact' ? <ContactEditor value={activeValue} onChange={(next) => setContent({ ...content, contact: next })} onSave={save} /> : activeSection === 'hero' ? <HeroEditor value={activeValue} onChange={(next) => setContent({ ...content, hero: next })} onImageUpload={uploadImage} /> : activeSection === 'pvmo' ? <PvmoEditor value={activeValue} onChange={(next) => setContent({ ...content, pvmo: next })} onImageUpload={uploadImage} /> : <Editor value={activeValue} onChange={(next) => setContent({ ...content, [activeSection]: next })} onImageUpload={uploadImage} />}</section>
     </main>
   </div>;
 }

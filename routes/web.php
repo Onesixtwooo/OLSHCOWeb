@@ -3,7 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
+use App\Http\Middleware\CheckMaintenanceMode;
 
+Route::get('/maintenance', function () {
+    $content = \App\Models\PageSetting::query()->where('key', 'homepage')->value('value');
+
+    return response()->view('maintenance', ['maintenance' => $content['settings']['maintenance'] ?? []])
+        ->header('Cache-Control', 'no-store, private')
+        ->header('X-Robots-Tag', 'noindex');
+})->name('maintenance');
+
+Route::middleware(CheckMaintenanceMode::class)->group(function () {
 Route::get('/', function () {
     $setting = \App\Models\PageSetting::query()->where('key', 'homepage')->first();
 
@@ -52,6 +62,7 @@ Route::get('/homepage-content', [AdminController::class, 'publicContent'])->name
 Route::post('/contact/messages', [ContactController::class, 'store'])
     ->middleware('throttle:contact-messages')
     ->name('contact.messages.store');
+});
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/setup', [AdminController::class, 'showSetup'])->name('setup');
@@ -63,6 +74,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/{section}/edit', [AdminController::class, 'dashboard'])->name('section.edit');
         Route::put('/content', [AdminController::class, 'updateContent'])->name('content.update');
+        Route::put('/settings/maintenance', [AdminController::class, 'updateMaintenance'])->name('settings.maintenance.update');
         Route::post('/uploads/program-image', [AdminController::class, 'uploadProgramImage'])->name('uploads.program-image');
         Route::post('/uploads/hymn-audio', [AdminController::class, 'uploadHymnAudio'])->name('uploads.hymn-audio');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');

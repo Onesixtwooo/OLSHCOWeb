@@ -1,4 +1,11 @@
 export const DEFAULT_HOMEPAGE_CONTENT = {
+  settings: {
+    maintenance: {
+      enabled: false,
+      title: 'We will be back soon',
+      message: 'Our website is temporarily unavailable while we make improvements. Please check back shortly.',
+    },
+  },
   site: {
     brand: 'OLSHCO',
     enrollCta: 'Enroll Now',
