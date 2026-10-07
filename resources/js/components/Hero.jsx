@@ -188,12 +188,19 @@ export default function Hero({ content = {} }) {
                     className={`hero-slide-item ${idx === currentSlide ? 'active' : ''}`}
                     aria-hidden={idx !== currentSlide}
                   >
-                    <div
-                      className={`hero-main-photo ${slideImg ? '' : 'hero-image-placeholder'}`}
-                      role="img"
-                      aria-label={`OLSHCO campus slide ${idx + 1}`}
-                      style={slideImg ? { backgroundImage: `url(${slideImg})` } : undefined}
-                    />
+                    {slideImg ? (
+                      <img
+                        className="hero-main-photo"
+                        src={slideImg}
+                        alt={`OLSHCO campus slide ${idx + 1}`}
+                      />
+                    ) : (
+                      <div
+                        className="hero-main-photo hero-image-placeholder"
+                        role="img"
+                        aria-label={`OLSHCO campus slide ${idx + 1}`}
+                      />
+                    )}
                   </div>
                 );
               })}
