@@ -1,30 +1,30 @@
 {
-  "_RichText-CvH2NP2L.js": {
-    "file": "assets/RichText-CvH2NP2L.js",
+  "_RichText-XPCrjLlo.js": {
+    "file": "assets/RichText-XPCrjLlo.js",
     "name": "RichText"
   },
   "resources/js/admin.jsx": {
-    "file": "assets/admin-DR5CkRJg.js",
+    "file": "assets/admin-CsF6bO7C.js",
     "name": "admin",
     "src": "resources/js/admin.jsx",
     "isEntry": true,
     "imports": [
-      "_RichText-CvH2NP2L.js"
+      "_RichText-XPCrjLlo.js"
     ],
     "css": [
-      "assets/admin-DaSv61U-.css"
+      "assets/admin-Ch8FFZpg.css"
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-kXmL63BI.js",
+    "file": "assets/app-DWEU2Pwi.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
     "imports": [
-      "_RichText-CvH2NP2L.js"
+      "_RichText-XPCrjLlo.js"
     ],
     "css": [
-      "assets/app-CJIzvui3.css"
+      "assets/app-BVaBfhe1.css"
     ]
   }
 }
