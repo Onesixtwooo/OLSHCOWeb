@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DEFAULT_HOMEPAGE_CONTENT, mergeHomepageContent } from './content/homepageContent';
 import RichTextEditor from './components/RichTextEditor';
@@ -105,7 +105,7 @@ function ArrayEditor({ value, onChange, label, onImageUpload }) {
   return <div className="admin-array"><div className="admin-array-heading"><span>{pretty(label)}</span><button type="button" onClick={() => onChange([...value, objectArray ? { ...value[0] } : ''])}>Add</button></div>{value.map((item, index) => objectArray ? <div className="admin-array-card" key={index}><div className="admin-array-card-heading"><strong>{item.title || item.name || `${pretty(label)} ${index + 1}`}</strong><button type="button" className="admin-remove" onClick={() => onChange(value.filter((_, itemIndex) => itemIndex !== index))}>Remove</button></div><Editor value={item} onChange={(next) => onChange(value.map((entry, itemIndex) => itemIndex === index ? next : entry))} onImageUpload={onImageUpload} /></div> : <div className="admin-inline-field" key={index}><input value={item} onChange={(event) => onChange(value.map((entry, itemIndex) => itemIndex === index ? event.target.value : entry))} /><button type="button" className="admin-remove" aria-label={`Remove ${pretty(label)} ${index + 1}`} onClick={() => onChange(value.filter((_, itemIndex) => itemIndex !== index))}>×</button></div>)}</div>;
 }
 
-function CollapsibleSection({ id, icon, title, subtitle, isOpen, onToggle, children }) {
+function CollapsibleSection({ id, icon, title, subtitle, isOpen, onToggle, children, onSave, saveStatus }) {
   return (
     <div className={`hero-editor-section is-collapsible ${isOpen ? 'is-open' : 'is-collapsed'}`}>
       <button
@@ -138,10 +138,12 @@ function CollapsibleSection({ id, icon, title, subtitle, isOpen, onToggle, child
         id={`section-body-${id}`}
         className={`hero-editor-section-body-wrapper ${isOpen ? 'is-open' : 'is-collapsed'}`}
         aria-hidden={!isOpen}
+        inert={!isOpen}
       >
         <div className="hero-editor-section-body">
           <div className="hero-editor-section-body-inner">
             {children}
+            <SectionSaveAction onSave={onSave} status={saveStatus} />
           </div>
         </div>
       </div>
@@ -276,20 +278,28 @@ function AcademicDepartmentEditor({ departmentKey, order, value, onChange, onIma
   </section>;
 }
 
-function AcademicsEditor({ value, onChange, onImageUpload, onSave }) {
+function AcademicsEditor({ value, onChange, onImageUpload, onSave, saveStatus }) {
   const { ibed = {}, college = {}, ...overview } = value || {};
-  const departments = [
-    { key: 'ibed', value: ibed },
-    { key: 'college', value: college },
+  const [activeGroup, setActiveGroup] = useState('overview');
+  const groups = [
+    { key: 'overview', label: 'Section overview', detail: 'Page heading and introduction' },
+    { key: 'ibed', label: 'Integrated Basic Education', detail: `${ibed.programs?.length || 0} programs` },
+    { key: 'college', label: 'College', detail: `${college.programs?.length || 0} programs` },
   ];
 
   return <div className="admin-academics-editor">
-    <div className="admin-academics-overview">
-      <div className="admin-group-label"><span>Section overview</span><small>Text shown above all academic departments</small></div>
+    <nav className="admin-academics-tabs" aria-label="Academic editor sections">
+      {groups.map((group) => <button key={group.key} type="button" className={`admin-academics-tab${activeGroup === group.key ? ' active' : ''}`} aria-pressed={activeGroup === group.key} onClick={() => setActiveGroup(group.key)}>
+        <span>{group.label}</span><small>{group.detail}</small>
+      </button>)}
+    </nav>
+    {activeGroup === 'overview' && <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Section overview</span><small>Text shown above both academic departments</small></div>
       <Editor value={overview} onChange={(next) => onChange({ ...next, ibed, college })} />
-    </div>
-    <div className="admin-departments-heading"><div><span>Departments</span><small>Grouped in the same order used on the homepage</small></div><span className="admin-departments-total">{departments.length} groups</span></div>
-    {departments.map((department, index) => <AcademicDepartmentEditor key={department.key} departmentKey={department.key} order={index + 1} value={department.value} onChange={(next) => onChange({ ...value, [department.key]: next })} onImageUpload={onImageUpload} onSave={onSave} />)}
+    </div>}
+    {activeGroup === 'ibed' && <AcademicDepartmentEditor departmentKey="ibed" order={1} value={ibed} onChange={(next) => onChange({ ...value, ibed: next })} onImageUpload={onImageUpload} onSave={onSave} />}
+    {activeGroup === 'college' && <AcademicDepartmentEditor departmentKey="college" order={2} value={college} onChange={(next) => onChange({ ...value, college: next })} onImageUpload={onImageUpload} onSave={onSave} />}
+    <SectionSaveAction onSave={onSave} status={saveStatus} />
   </div>;
 }
 
@@ -312,10 +322,18 @@ function AudioUploadField({ value, mediaType, onChange, onAudioUpload }) {
     finally { setUploading(false); event.target.value = ''; }
   };
   const isVideo = mediaType === 'video' || /\.(mp4|webm|mov)(?:\?|$)/i.test(value || '');
-  return <div className="admin-audio-upload"><label className="admin-upload-button">{uploading ? 'Uploading...' : value ? 'Replace hymn media' : 'Upload hymn media'}<input type="file" accept="audio/*,video/mp4,video/webm,video/quicktime" onChange={handleChange} disabled={uploading} /></label>{value && <>{isVideo ? <video controls src={value} /> : <audio controls src={value} />} <button type="button" className="admin-remove-image" onClick={() => onChange({ url: '', type: '' })}>Remove hymn media</button></>}{error && <small className="admin-upload-error">{error}</small>}<small className="admin-upload-hint">MP3, WAV, OGG, M4A, AAC, MP4, WEBM, or MOV - max 50 MB</small></div>;
+  return <div className="admin-audio-upload">
+    <div className="admin-audio-upload-actions">
+      <label className="admin-upload-button">{uploading ? 'Uploading...' : value ? 'Replace hymn media' : 'Upload hymn media'}<input type="file" accept="audio/*,video/mp4,video/webm,video/quicktime" onChange={handleChange} disabled={uploading} /></label>
+      {value && <button type="button" className="admin-remove-image" onClick={() => onChange({ url: '', type: '' })}>Remove hymn media</button>}
+    </div>
+    {value && (isVideo ? <video controls preload="metadata" src={value} /> : <audio controls preload="metadata" src={value} />)}
+    {error && <small className="admin-upload-error">{error}</small>}
+    <small className="admin-upload-hint">MP3, WAV, OGG, M4A, AAC, MP4, WEBM, or MOV - max 50 MB</small>
+  </div>;
 }
 
-function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSave }) {
+function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSave, saveStatus }) {
   const set = (key) => (val) => onChange({ ...value, [key]: val });
   const features = Array.isArray(value.features) ? value.features : [];
   const impact = Array.isArray(value.impact) ? value.impact : [];
@@ -378,6 +396,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         subtitle="The history and founding story shown on the About page"
         isOpen={!!openSections.header}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="admin-field hero-editor-full">
           <RichTextEditor
@@ -389,8 +409,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         </div>
       </CollapsibleSection>
 
-      <CollapsibleSection id="hymn" icon="♫" title="School Hymn" subtitle="Add the school hymn lyrics and music file" isOpen={!!openSections.hymn} onToggle={toggleSection}>
-        <div className="hero-editor-grid">
+      <CollapsibleSection id="hymn" icon="♫" title="School Hymn" subtitle="Add the school hymn lyrics and music file" isOpen={!!openSections.hymn} onToggle={toggleSection} onSave={onSave} saveStatus={saveStatus}>
+        <div className="hero-editor-grid admin-hymn-grid">
           <label className="admin-field"><span>Hymn title</span><input value={value.hymn?.title ?? ''} onChange={(e) => onChange({ ...value, hymn: { ...(value.hymn || {}), title: e.target.value } })} placeholder="e.g. OLSHCO School Hymn" /></label>
           <div className="admin-field"><span>Music or video file</span><AudioUploadField value={value.hymn?.musicUrl ?? ''} mediaType={value.hymn?.mediaType} onChange={(media) => onChange({ ...value, hymn: { ...(value.hymn || {}), musicUrl: media.url, mediaType: media.type } })} onAudioUpload={onAudioUpload} /></div>
           <div className="admin-field hero-editor-full"><RichTextEditor label="Lyrics" value={value.hymn?.lyrics ?? ''} onChange={(lyrics) => onChange({ ...value, hymn: { ...(value.hymn || {}), lyrics } })} placeholder="Enter the school hymn lyrics..." /></div>
@@ -405,6 +425,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         subtitle="Top & bottom floating badges and campus photo"
         isOpen={!!openSections.visual}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         {/* Floating Top Badge */}
         <div className="hero-editor-grid">
@@ -474,6 +496,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         subtitle={`${features.length} core community & learning features shown in the about grid`}
         isOpen={!!openSections.features}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <AboutArrayEditor
           label="Features"
@@ -491,6 +515,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         subtitle={`${impact.length} milestone statistics and impact highlights`}
         isOpen={!!openSections.impact}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <AboutArrayEditor
           label="Impact"
@@ -508,6 +534,8 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
         subtitle="Call-to-action link, divider tagline rule, and bottom brand watermark"
         isOpen={!!openSections.actions}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="hero-editor-grid">
           <label className="admin-field">
@@ -544,12 +572,11 @@ function AboutEditor({ value = {}, onChange, onImageUpload, onAudioUpload, onSav
           </label>
         </div>
       </CollapsibleSection>
-      <div className="admin-editor-save-row"><button type="button" className="admin-save" onClick={() => onSave?.(value)}>Save About page</button></div>
     </div>
   );
 }
 
-function AdministrationEditor({ value = {}, onChange, onImageUpload }) {
+function AdministrationEditor({ value = {}, onChange, onImageUpload, onSave, saveStatus }) {
   const entries = Array.isArray(value.entries) ? value.entries : [];
   const departments = Array.isArray(value.departments) ? value.departments : [];
   const [openPeople, setOpenPeople] = useState(() => entries.reduce((state, _, index) => ({ ...state, [index]: false }), {}));
@@ -563,13 +590,37 @@ function AdministrationEditor({ value = {}, onChange, onImageUpload }) {
       <div className="admin-person-summary"><button type="button" className="admin-person-toggle" onClick={() => setOpenPeople((state) => ({ ...state, [index]: !state[index] }))} aria-expanded={!!openPeople[index]}><span className="admin-person-title"><strong>{person.name || `Person ${index + 1}`}</strong>{person.role && <small>{person.role}</small>}</span><span className="admin-person-chevron" aria-hidden="true">⌄</span></button></div>
       {openPeople[index] && <div className="admin-person-card-body"><div className="admin-person-actions"><button type="button" className="admin-remove" onClick={() => onChange({ ...value, entries: entries.filter((_, i) => i !== index) })}>Remove</button></div><div className="admin-editor-grid"><label className="admin-field"><span>Name</span><input value={person.name ?? ''} onChange={(e) => update(index, 'name', e.target.value)} placeholder="e.g. Juan Dela Cruz" /></label><label className="admin-field"><span>Designation</span><input value={person.role ?? ''} onChange={(e) => update(index, 'role', e.target.value)} placeholder="e.g. School President" /></label><label className="admin-field"><span>Department</span><input value={person.department ?? ''} onChange={(e) => update(index, 'department', e.target.value)} placeholder="e.g. School Leadership" /></label><label className="admin-field"><span>Display order</span><input type="number" min="1" value={person.order ?? index + 1} onChange={(e) => update(index, 'order', Number(e.target.value) || index + 1)} /></label></div><label className="admin-field"><span>Profile image</span><ImageUploadField value={person.image ?? ''} onChange={(next) => update(index, 'image', next)} onImageUpload={onImageUpload} /></label></div>}
     </div>)}
-    <div className="admin-department-editor"><div className="admin-program-list-heading"><div><span>Departments</span><small>Define the departments used to organize the public directory.</small></div><button type="button" onClick={() => onChange({ ...value, departments: [...departments, { name: '', description: '' }] })}>+ Add department</button></div>{departments.length === 0 && <div className="admin-empty-state">No departments added yet.</div>}{departments.map((department, index) => <div className="admin-array-card" key={index}><div className="admin-array-card-heading"><strong>{department.name || `Department ${index + 1}`}</strong><button type="button" className="admin-remove" onClick={() => onChange({ ...value, departments: departments.filter((_, i) => i !== index) })}>Remove</button></div><label className="admin-field"><span>Department name</span><input value={department.name ?? ''} onChange={(e) => updateDepartment(index, 'name', e.target.value)} placeholder="e.g. Academic Faculty" /></label><label className="admin-field"><span>Description</span><input value={department.description ?? ''} onChange={(e) => updateDepartment(index, 'description', e.target.value)} placeholder="Short description" /></label></div>)}</div>
+    <SectionSaveAction onSave={onSave} status={saveStatus} />
+    <div className="admin-department-editor"><div className="admin-program-list-heading"><div><span>Departments</span><small>Define the departments used to organize the public directory.</small></div><button type="button" onClick={() => onChange({ ...value, departments: [...departments, { name: '', description: '' }] })}>+ Add department</button></div>{departments.length === 0 && <div className="admin-empty-state">No departments added yet.</div>}{departments.map((department, index) => <div className="admin-array-card" key={index}><div className="admin-array-card-heading"><strong>{department.name || `Department ${index + 1}`}</strong><button type="button" className="admin-remove" onClick={() => onChange({ ...value, departments: departments.filter((_, i) => i !== index) })}>Remove</button></div><label className="admin-field"><span>Department name</span><input value={department.name ?? ''} onChange={(e) => updateDepartment(index, 'name', e.target.value)} placeholder="e.g. Academic Faculty" /></label><label className="admin-field"><span>Description</span><input value={department.description ?? ''} onChange={(e) => updateDepartment(index, 'description', e.target.value)} placeholder="Short description" /></label></div>)}<SectionSaveAction onSave={onSave} status={saveStatus} /></div>
   </div>;
 }
 
-function ContactEditor({ value, onChange, onSave }) {
+function ContactEditor({ value, onChange, onSave, saveStatus }) {
   const { details = [], formTitle, formDescription, responseNote, mapEmbedUrl = '', mapLinkUrl = '', ...overview } = value || {};
-  return <div className="admin-about-editor"><div className="admin-academics-overview"><div className="admin-group-label"><span>Contact overview</span><small>Introductory content and contact section headings</small></div><Editor value={overview} onChange={(next) => onChange({ ...next, details, mapEmbedUrl, mapLinkUrl, formTitle, formDescription, responseNote })} /></div><div className="admin-academics-overview"><div className="admin-group-label"><span>Google Maps</span><small>Use an embed URL for the map and an optional Google Maps link for the welcome button.</small></div><label className="admin-field"><span>Google Maps embed URL</span><input type="url" value={mapEmbedUrl} onChange={(event) => onChange({ ...value, mapEmbedUrl: event.target.value })} placeholder="https://www.google.com/maps/embed?pb=..." /></label><small className="admin-upload-hint">Use Share → Embed a map, then copy the iframe src URL.</small><label className="admin-field"><span>Google Maps redirect URL</span><input type="url" value={mapLinkUrl} onChange={(event) => onChange({ ...value, mapLinkUrl: event.target.value })} placeholder="https://maps.app.goo.gl/..." /></label><small className="admin-upload-hint">Use Share → Copy link. Clicking the welcome card will open this URL in a new tab.</small></div><ContactDetailsEditor value={details} onChange={(next) => onChange({ ...value, details: next })} onSave={onSave} /><div className="admin-academics-overview"><div className="admin-group-label"><span>Inquiry form</span><small>Content shown beside the message form</small></div><Editor value={{ formTitle, formDescription, responseNote }} onChange={(next) => onChange({ ...value, ...next, details, mapEmbedUrl, mapLinkUrl })} /></div></div>;
+  return <div className="admin-about-editor">
+    <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Contact overview</span><small>Introductory content and contact section headings</small></div>
+      <Editor value={overview} onChange={(next) => onChange({ ...next, details, mapEmbedUrl, mapLinkUrl, formTitle, formDescription, responseNote })} />
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
+    </div>
+    <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Google Maps</span><small>Use an embed URL for the map and an optional Google Maps link for the welcome button.</small></div>
+      <label className="admin-field"><span>Google Maps embed URL</span><input type="url" value={mapEmbedUrl} onChange={(event) => onChange({ ...value, mapEmbedUrl: event.target.value })} placeholder="https://www.google.com/maps/embed?pb=..." /></label>
+      <small className="admin-upload-hint">Use Share → Embed a map, then copy the iframe src URL.</small>
+      <label className="admin-field"><span>Google Maps redirect URL</span><input type="url" value={mapLinkUrl} onChange={(event) => onChange({ ...value, mapLinkUrl: event.target.value })} placeholder="https://maps.app.goo.gl/..." /></label>
+      <small className="admin-upload-hint">Use Share → Copy link. Clicking the welcome card will open this URL in a new tab.</small>
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
+    </div>
+    <div className="admin-academics-overview">
+      <ContactDetailsEditor value={details} onChange={(next) => onChange({ ...value, details: next })} onSave={onSave} />
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
+    </div>
+    <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Inquiry form</span><small>Content shown beside the message form</small></div>
+      <Editor value={{ formTitle, formDescription, responseNote }} onChange={(next) => onChange({ ...value, ...next, details, mapEmbedUrl, mapLinkUrl })} />
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
+    </div>
+  </div>;
 }
 
 const EMPTY_ADMISSION_STEP = {
@@ -614,7 +665,7 @@ function AdmissionsStepsEditor({ value = [], onChange, onSave }) {
   </div>;
 }
 
-function AdmissionsEditor({ value, onChange, onSave }) {
+function AdmissionsEditor({ value, onChange, onSave, saveStatus }) {
   const { steps = [], ...content } = value || {};
   const set = (key) => (next) => onChange({ ...value, [key]: next, steps });
 
@@ -624,15 +675,18 @@ function AdmissionsEditor({ value, onChange, onSave }) {
       <div className="admin-editor-fields admin-admissions-grid">
         {['badge', 'title', 'description'].map((key) => <TextField key={key} label={key} value={content[key]} onChange={set(key)} />)}
       </div>
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
     </div>
     <div className="admin-admissions-section">
       <div className="admin-group-label"><div><span>Spotlight CTA</span><small>Featured invitation displayed beside the enrollment steps</small></div></div>
       <div className="admin-editor-fields admin-admissions-grid">
         {['spotlightEyebrow', 'spotlightTitle', 'spotlightDescription', 'spotlightButton'].map((key) => <TextField key={key} label={key} value={content[key]} onChange={set(key)} />)}
       </div>
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
     </div>
     <div className="admin-admissions-section admin-admissions-steps-section">
       <AdmissionsStepsEditor value={steps} onChange={(next) => onChange({ ...value, steps: next })} onSave={onSave} />
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
     </div>
   </div>;
 }
@@ -892,10 +946,19 @@ function HeroSlidesManager({ slides = [], intervalSeconds = 4, onChange, onImage
   );
 }
 
-function HeroEditor({ value = {}, onChange, onImageUpload }) {
+function SectionSaveAction({ onSave, status }) {
+  if (!onSave) return null;
+  const saving = status === 'Saving…';
+  return <div className="admin-section-save"><span role="status" aria-live="polite">{status}</span><button type="button" className="admin-save" disabled={saving} onClick={() => onSave()}>{saving ? 'Saving…' : 'Save changes'}</button></div>;
+}
+
+function HeroEditor({ value = {}, onChange, onImageUpload, onSave, saveStatus }) {
   const set = (key) => (val) => onChange({ ...value, [key]: val });
   const features = value.quickFeatures || [];
   const [newFeature, setNewFeature] = useState('');
+  const [openSections, setOpenSections] = useState({ slides: true });
+  const toggleSection = (id) => setOpenSections((current) => ({ ...current, [id]: !current[id] }));
+  const heroSections = ['slides', 'timing', 'headline', 'description', 'cta', 'features'];
   const addFeature = () => {
     const trimmed = newFeature.trim();
     if (!trimmed) return;
@@ -919,23 +982,23 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
 
   return (
     <div className="hero-editor">
+      <div className="admin-accordion-toolbar">
+        <div className="admin-accordion-hint"><span>Hero settings</span><span className="admin-accordion-count">{heroSections.filter((id) => openSections[id]).length} of {heroSections.length} open</span></div>
+        <div className="admin-accordion-actions"><button type="button" className="admin-accordion-btn" onClick={() => setOpenSections(Object.fromEntries(heroSections.map((id) => [id, true])))}>Expand all</button><button type="button" className="admin-accordion-btn" onClick={() => setOpenSections({})}>Collapse all</button></div>
+      </div>
       {/* Slideshow Manager (At least 5 slides) */}
+      <CollapsibleSection id="home-hero-slides" icon="▣" title="Rolling Slideshow" subtitle={`${slides.length} slides in display order`} isOpen={!!openSections.slides} onToggle={() => toggleSection('slides')}>
       <HeroSlidesManager
         slides={slides}
         intervalSeconds={intervalSeconds}
         onChange={handleSlidesChange}
         onImageUpload={onImageUpload}
       />
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
 
       {/* Slide Timing Settings */}
-      <div className="hero-editor-section">
-        <div className="hero-editor-section-head">
-          <span className="hero-editor-section-icon">⏱</span>
-          <div>
-            <strong>Slideshow Rolling Interval</strong>
-            <small>How many seconds each slide stays before rolling to the next (default: 4 seconds)</small>
-          </div>
-        </div>
+      <CollapsibleSection id="home-hero-timing" icon="⏱" title="Slideshow Rolling Interval" subtitle="How long each slide stays visible" isOpen={!!openSections.timing} onToggle={() => toggleSection('timing')}>
         <div className="hero-editor-grid">
           <label className="admin-field">
             <span>Interval (in seconds)</span>
@@ -948,14 +1011,11 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
             />
           </label>
         </div>
-      </div>
+        <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
 
       {/* Headline group */}
-      <div className="hero-editor-section">
-        <div className="hero-editor-section-head">
-          <span className="hero-editor-section-icon">✦</span>
-          <div><strong>Default Headline & Institution Tag</strong><small>School name tag and fallback headline text</small></div>
-        </div>
+      <CollapsibleSection id="home-hero-headline" icon="✦" title="Default Headline & Institution Tag" subtitle="School name tag and fallback headline text" isOpen={!!openSections.headline} onToggle={() => toggleSection('headline')}>
         <div className="hero-editor-grid">
           <label className="admin-field hero-editor-full">
             <span>Institution Tag</span>
@@ -970,14 +1030,11 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
             <input value={value.titleBottom || ''} onChange={(e) => set('titleBottom')(e.target.value)} placeholder="e.g. GROUNDED IN EXCELLENCE" />
           </label>
         </div>
-      </div>
+        <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
 
       {/* Description */}
-      <div className="hero-editor-section">
-        <div className="hero-editor-section-head">
-          <span className="hero-editor-section-icon">¶</span>
-          <div><strong>Default Description</strong><small>Introductory paragraph shown when a slide does not specify custom text</small></div>
-        </div>
+      <CollapsibleSection id="home-hero-description" icon="¶" title="Default Description" subtitle="Introductory text used when a slide has no description" isOpen={!!openSections.description} onToggle={() => toggleSection('description')}>
         <div className="admin-field">
           <RichTextEditor
             label="Body text"
@@ -986,14 +1043,11 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
             placeholder="Introductory paragraph shown below the headline…"
           />
         </div>
-      </div>
+        <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
 
       {/* CTA + Phone */}
-      <div className="hero-editor-section">
-        <div className="hero-editor-section-head">
-          <span className="hero-editor-section-icon">⚡</span>
-          <div><strong>Call to action</strong><small>Button label and contact phone shown in the hero</small></div>
-        </div>
+      <CollapsibleSection id="home-hero-cta" icon="⚡" title="Call to action" subtitle="Button label and contact phone shown in the hero" isOpen={!!openSections.cta} onToggle={() => toggleSection('cta')}>
         <div className="hero-editor-grid">
           <label className="admin-field">
             <span>CTA Button Label</span>
@@ -1004,14 +1058,11 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
             <input value={value.phoneNumber || ''} onChange={(e) => set('phoneNumber')(e.target.value)} placeholder="e.g. (044) 958-0000" />
           </label>
         </div>
-      </div>
+        <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
 
       {/* Quick Features */}
-      <div className="hero-editor-section">
-        <div className="hero-editor-section-head">
-          <span className="hero-editor-section-icon">◈</span>
-          <div><strong>Quick Features</strong><small>Short highlight tags shown in the hero strip</small></div>
-        </div>
+      <CollapsibleSection id="home-hero-features" icon="◈" title="Quick Features" subtitle="Short highlight tags shown in the hero strip" isOpen={!!openSections.features} onToggle={() => toggleSection('features')}>
         <div className="hero-chips">
           {features.map((f, i) => (
             <span key={i} className="hero-chip">
@@ -1029,7 +1080,8 @@ function HeroEditor({ value = {}, onChange, onImageUpload }) {
           />
           <button type="button" onClick={addFeature}>Add</button>
         </div>
-      </div>
+        <SectionSaveAction onSave={onSave} status={saveStatus} />
+      </CollapsibleSection>
     </div>
   );
 }
@@ -1043,7 +1095,7 @@ const PVMO_SECTIONS = [
   { id: 'footer', label: 'Section Footer' },
 ];
 
-function PvmoEditor({ value = {}, onChange, onImageUpload }) {
+function PvmoEditor({ value = {}, onChange, onImageUpload, onSave, saveStatus }) {
   const set = (key) => (val) => onChange({ ...value, [key]: val });
   const coreValues = Array.isArray(value.coreValues) ? value.coreValues : [];
 
@@ -1129,6 +1181,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="Badge, title, and overview description for the PVMO section"
         isOpen={!!openSections.header}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="hero-editor-grid">
           <label className="admin-field">
@@ -1158,6 +1212,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="Educational philosophy and statue image"
         isOpen={!!openSections.philosophy}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="admin-field">
           <RichTextEditor
@@ -1201,6 +1257,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="The institution's long-term vision and kicker"
         isOpen={!!openSections.vision}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="hero-editor-grid">
           <div className="admin-field hero-editor-full">
@@ -1226,6 +1284,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="The educational mission and kicker"
         isOpen={!!openSections.mission}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="hero-editor-grid">
           <div className="admin-field hero-editor-full">
@@ -1251,6 +1311,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="Guiding pillars of character and student development"
         isOpen={!!openSections.values}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="admin-field hero-editor-full">
           <RichTextEditor
@@ -1327,6 +1389,8 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         subtitle="Brand mark line and tagline at the bottom of the section"
         isOpen={!!openSections.footer}
         onToggle={toggleSection}
+        onSave={onSave}
+        saveStatus={saveStatus}
       >
         <div className="hero-editor-grid">
           <label className="admin-field">
@@ -1343,8 +1407,10 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
   );
 }
 
-function HomeEditor({ content, onChange, onImageUpload }) {
-  const [activeTab, setActiveTab] = useState('all');
+function HomeEditor({ content, onChange, onImageUpload, onSave, saveStatus }) {
+  const [openSections, setOpenSections] = useState({});
+  const toggleSection = (id) => setOpenSections((current) => ({ ...current, [id]: !current[id] }));
+  const homeSections = ['hero', 'site', 'visibility', 'footer'];
 
   const hero = content.hero || {};
   const site = content.site || {};
@@ -1355,14 +1421,6 @@ function HomeEditor({ content, onChange, onImageUpload }) {
   const setSiteField = (key, val) => onChange({ ...content, site: { ...site, [key]: val } });
   const setFooterField = (key, val) => onChange({ ...content, footer: { ...footer, [key]: val } });
   const toggleVisibility = (key) => onChange({ ...content, visibility: { ...visibility, [key]: !visibility[key] } });
-
-  const tabs = [
-    { id: 'all', label: 'All Sections' },
-    { id: 'hero', label: 'Hero Banner' },
-    { id: 'site', label: 'Site & Navigation' },
-    { id: 'visibility', label: 'Section Visibility' },
-    { id: 'footer', label: 'Footer' },
-  ];
 
   const visibilitySections = [
     { key: 'hero', label: 'Hero Banner', desc: 'Main headline, call-to-action button, and campus highlights' },
@@ -1375,37 +1433,19 @@ function HomeEditor({ content, onChange, onImageUpload }) {
 
   return (
     <div className="home-editor">
-      <div className="admin-subtabs" role="tablist" aria-label="Home page sub-sections">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            className={`admin-subtab-btn ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="admin-accordion-toolbar">
+        <div className="admin-accordion-hint"><span>Home sections</span><span className="admin-accordion-count">{homeSections.filter((id) => openSections[id]).length} of {homeSections.length} open</span></div>
+        <div className="admin-accordion-actions"><button type="button" className="admin-accordion-btn" onClick={() => setOpenSections(Object.fromEntries(homeSections.map((id) => [id, true])))}>Expand all</button><button type="button" className="admin-accordion-btn" onClick={() => setOpenSections({})}>Collapse all</button></div>
       </div>
 
       <div className="hero-editor">
         {/* 1. Hero Banner */}
-        {(activeTab === 'all' || activeTab === 'hero') && (
-          <HeroEditor value={hero} onChange={setHero} onImageUpload={onImageUpload} />
-        )}
+        <CollapsibleSection id="home-hero" icon="✦" title="Hero Banner" subtitle="Slides, headlines, contact details, and highlights" isOpen={!!openSections.hero} onToggle={() => toggleSection('hero')}>
+          <HeroEditor value={hero} onChange={setHero} onImageUpload={onImageUpload} onSave={onSave} saveStatus={saveStatus} />
+        </CollapsibleSection>
 
         {/* 2. Site & Navigation Settings */}
-        {(activeTab === 'all' || activeTab === 'site') && (
-          <div className="hero-editor-section">
-            <div className="hero-editor-section-head">
-              <span className="hero-editor-section-icon">⚙</span>
-              <div>
-                <strong>Site & Navigation Settings</strong>
-                <small>School brand identity and top navigation bar button text</small>
-              </div>
-            </div>
+        <CollapsibleSection id="home-site" icon="⚙" title="Site & Navigation Settings" subtitle="School brand identity and top navigation button text" isOpen={!!openSections.site} onToggle={() => toggleSection('site')}>
             <div className="hero-editor-grid">
               <label className="admin-field">
                 <span>Brand Name / Logo Text</span>
@@ -1424,19 +1464,11 @@ function HomeEditor({ content, onChange, onImageUpload }) {
                 />
               </label>
             </div>
-          </div>
-        )}
+            <SectionSaveAction onSave={onSave} status={saveStatus} />
+        </CollapsibleSection>
 
         {/* 3. Section Visibility */}
-        {(activeTab === 'all' || activeTab === 'visibility') && (
-          <div className="hero-editor-section">
-            <div className="hero-editor-section-head">
-              <span className="hero-editor-section-icon">👁</span>
-              <div>
-                <strong>Section Visibility</strong>
-                <small>Choose which sections are displayed or hidden on the live homepage</small>
-              </div>
-            </div>
+        <CollapsibleSection id="home-visibility" icon="◉" title="Section Visibility" subtitle="Choose which sections appear on the live homepage" isOpen={!!openSections.visibility} onToggle={() => toggleSection('visibility')}>
             <div className="visibility-grid">
               {visibilitySections.map((sec) => {
                 const isVisible = visibility[sec.key] !== false;
@@ -1464,19 +1496,11 @@ function HomeEditor({ content, onChange, onImageUpload }) {
                 );
               })}
             </div>
-          </div>
-        )}
+            <SectionSaveAction onSave={onSave} status={saveStatus} />
+        </CollapsibleSection>
 
         {/* 4. Footer */}
-        {(activeTab === 'all' || activeTab === 'footer') && (
-          <div className="hero-editor-section">
-            <div className="hero-editor-section-head">
-              <span className="hero-editor-section-icon">⚓</span>
-              <div>
-                <strong>Footer Content</strong>
-                <small>Brand description statement displayed in the site footer</small>
-              </div>
-            </div>
+        <CollapsibleSection id="home-footer" icon="⚓" title="Footer Content" subtitle="Brand description displayed in the site footer" isOpen={!!openSections.footer} onToggle={() => toggleSection('footer')}>
             <div className="admin-field">
               <RichTextEditor
                 label="Footer Description"
@@ -1485,8 +1509,8 @@ function HomeEditor({ content, onChange, onImageUpload }) {
                 placeholder="Our Lady of the Sacred Heart College - nurturing faith, inspiring excellence..."
               />
             </div>
-          </div>
-        )}
+            <SectionSaveAction onSave={onSave} status={saveStatus} />
+        </CollapsibleSection>
       </div>
     </div>
   );
@@ -1501,7 +1525,7 @@ function Editor({ value, onChange, onImageUpload }) {
   })}</div>;
 }
 
-function ServicesEditor({ value, onChange, onImageUpload, onSave }) {
+function ServicesEditor({ value, onChange, onImageUpload, onSave, saveStatus }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const { offices = [], ...heading } = value;
   const updateOffice = (index, next) => onChange({ ...value, offices: offices.map((office, i) => i === index ? next : office) });
@@ -1511,7 +1535,11 @@ function ServicesEditor({ value, onChange, onImageUpload, onSave }) {
     onChange({ ...value, offices: next });
   };
   return <div className="admin-services-editor">
-    <Editor value={heading} onChange={(next) => onChange({ ...next, offices })} />
+    <div className="admin-academics-overview">
+      <div className="admin-group-label"><span>Services overview</span><small>Heading and introduction shown above the offices</small></div>
+      <Editor value={heading} onChange={(next) => onChange({ ...next, offices })} />
+      <SectionSaveAction onSave={() => onSave?.({ services: value })} status={saveStatus} />
+    </div>
     <div className="admin-program-list-heading"><div><span>Office details</span><small>Leave unknown details blank. Only completed details appear on the website.</small></div>
       <button type="button" onClick={() => { onChange({ ...value, offices: [...offices, { name: 'New office', image: '', description: '', offers: [], personInCharge: '', location: '', officeHours: '', contact: '', gallery: ['', '', '', '', '', ''] }] }); setActiveIndex(offices.length); }}>+ Add office</button>
     </div>
@@ -1536,10 +1564,11 @@ function ServicesEditor({ value, onChange, onImageUpload, onSave }) {
         <footer className="admin-modal-footer"><button type="button" className="admin-modal-done" onClick={async () => { await onSave?.({ services: value }); setActiveIndex(null); }}>Save and close</button></footer>
       </section></div>}
     </section>)}
+    <SectionSaveAction onSave={() => onSave?.({ services: value })} status={saveStatus} />
   </div>;
 }
 
-function SettingsEditor({ value = {}, onChange }) {
+function SettingsEditor({ value = {}, onChange, onSave, saveStatus }) {
   const maintenance = value.maintenance || {};
   const update = (field, next) => onChange({ ...value, maintenance: { ...maintenance, [field]: next } });
 
@@ -1551,6 +1580,7 @@ function SettingsEditor({ value = {}, onChange }) {
         <span>Enable maintenance mode</span>
       </label>
       <p className="admin-settings-note">When enabled and saved, all public pages show the maintenance message. The admin area stays available so you can turn it off.</p>
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
     </div>
     <div className="admin-academics-overview admin-editor-fields">
       <div className="admin-group-label"><span>Maintenance page</span><small>Customize the text visitors will see.</small></div>
@@ -1558,6 +1588,7 @@ function SettingsEditor({ value = {}, onChange }) {
       <label className="admin-field"><span>Message</span><textarea rows={4} maxLength={1000} value={maintenance.message ?? ''} onChange={(event) => update('message', event.target.value)} /></label>
       <p className="admin-settings-note">Preview shows the last saved message even when maintenance mode is off. Visit the homepage to check whether the mode is active.</p>
       <a className="admin-preview admin-settings-preview" href="/maintenance" target="_blank" rel="noreferrer">Preview saved maintenance page ↗</a>
+      <SectionSaveAction onSave={onSave} status={saveStatus} />
     </div>
   </div>;
 }
@@ -1567,6 +1598,11 @@ function UserManagementEditor() {
   const [status, setStatus] = useState('Loading users…');
   const [form, setForm] = useState({ name: '', email: '', role: 'editor' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const inviteButtonRef = useRef(null);
+  const nameInputRef = useRef(null);
+  const inviteDialogRef = useRef(null);
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 
   const loadUsers = async () => {
@@ -1579,11 +1615,45 @@ function UserManagementEditor() {
 
   useEffect(() => { loadUsers().catch((error) => setStatus(error.message)); }, []);
 
+  useEffect(() => {
+    if (isInviteOpen) nameInputRef.current?.focus();
+  }, [isInviteOpen]);
+
+  useEffect(() => {
+    if (!isInviteOpen) return;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape' && !isSubmitting) {
+        event.preventDefault();
+        closeInvite();
+      }
+      if (event.key !== 'Tab') return;
+      const controls = [...inviteDialogRef.current.querySelectorAll('input:not(:disabled), select:not(:disabled), button:not(:disabled)')];
+      if (!controls.length) return;
+      if (event.shiftKey && document.activeElement === controls[0]) {
+        event.preventDefault();
+        controls[controls.length - 1].focus();
+      } else if (!event.shiftKey && document.activeElement === controls[controls.length - 1]) {
+        event.preventDefault();
+        controls[0].focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isInviteOpen, isSubmitting]);
+
+  const closeInvite = () => {
+    if (isSubmitting) return;
+    setIsInviteOpen(false);
+    setInviteError('');
+    setForm({ name: '', email: '', role: 'editor' });
+    requestAnimationFrame(() => inviteButtonRef.current?.focus());
+  };
+
   const createUser = async (event) => {
     event.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
-    setStatus('Sending invitation…');
+    setInviteError('');
     try {
       const response = await fetch('/admin/users', {
         method: 'POST',
@@ -1592,14 +1662,16 @@ function UserManagementEditor() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setStatus(Object.values(data.errors || {}).flat()[0] || data.message || 'Unable to send invitation.');
+        setInviteError(Object.values(data.errors || {}).flat()[0] || data.message || 'Unable to send invitation.');
         return;
       }
       setUsers((current) => [data.user, ...current]);
       setForm({ name: '', email: '', role: 'editor' });
       setStatus(data.message || 'Invitation sent.');
+      setIsInviteOpen(false);
+      requestAnimationFrame(() => inviteButtonRef.current?.focus());
     } catch {
-      setStatus('Unable to reach the server. Please try again.');
+      setInviteError('Unable to reach the server. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1627,19 +1699,25 @@ function UserManagementEditor() {
       </div>
     </div>}
     <div className="admin-academics-overview">
-      <div className="admin-group-label"><span>Invite user</span><small>Editors can update public content. Administrators can also manage users.</small></div>
-      <form className="admin-user-form" onSubmit={createUser} aria-busy={isSubmitting}>
-        <label className="admin-field"><span>Name</span><input required disabled={isSubmitting} maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
-        <label className="admin-field"><span>Email</span><input required disabled={isSubmitting} type="email" maxLength={190} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
-        <label className="admin-field"><span>Role</span><select disabled={isSubmitting} value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}><option value="editor">Editor</option><option value="admin">Administrator</option></select></label>
-        <p className="admin-settings-note">We will email a link to this address so the user can set their own password.</p>
-        <button className="admin-user-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Sending invitation…' : 'Send invitation'}</button>
-      </form>
-    </div>
-    <div className="admin-academics-overview">
-      <div className="admin-group-label"><span>Users</span><small>{status || `${users.length} account${users.length === 1 ? '' : 's'}`}</small></div>
+      <div className="admin-group-label"><div><span>Users</span><small>{status || `${users.length} account${users.length === 1 ? '' : 's'}`}</small></div><button ref={inviteButtonRef} type="button" className="admin-invite-open" onClick={() => { setInviteError(''); setIsInviteOpen(true); }}>+ Invite user</button></div>
       <div className="admin-user-list">{users.map((user) => <div className="admin-user-row" key={user.id}><div><strong>{user.name}</strong><small>{user.email}</small></div><span className={`admin-user-role ${user.role}`}>{user.role === 'admin' ? 'Administrator' : 'Editor'}</span><button type="button" className="admin-remove" onClick={() => removeUser(user)}>Delete</button></div>)}</div>
     </div>
+    {isInviteOpen && <div className="admin-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeInvite(); }}>
+      <section ref={inviteDialogRef} className="admin-modal admin-user-modal" role="dialog" aria-modal="true" aria-labelledby="admin-invite-title" aria-describedby="admin-invite-description">
+        <header className="admin-modal-header"><div><span className="admin-modal-kicker">User management</span><h2 id="admin-invite-title">Invite user</h2></div><button type="button" className="admin-modal-close" onClick={closeInvite} disabled={isSubmitting} aria-label="Close invitation form">×</button></header>
+        <div className="admin-modal-content">
+          <p id="admin-invite-description" className="admin-user-modal-description">Editors can update public content. Administrators can also manage users.</p>
+          <form className="admin-user-form" onSubmit={createUser} aria-busy={isSubmitting}>
+            <label className="admin-field"><span>Name</span><input ref={nameInputRef} required disabled={isSubmitting} maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+            <label className="admin-field"><span>Email</span><input required disabled={isSubmitting} type="email" maxLength={190} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
+            <label className="admin-field"><span>Role</span><select disabled={isSubmitting} value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}><option value="editor">Editor</option><option value="admin">Administrator</option></select></label>
+            <p className="admin-settings-note">We will email a link to this address so the user can set their own password.</p>
+            {inviteError && <p className="admin-user-invite-error" role="alert">{inviteError}</p>}
+            <div className="admin-user-form-actions"><button type="button" className="admin-user-cancel" onClick={closeInvite} disabled={isSubmitting}>Cancel</button><button className="admin-user-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Sending invitation…' : 'Send invitation'}</button></div>
+          </form>
+        </div>
+      </section>
+    </div>}
   </div>;
 }
 
@@ -1760,8 +1838,23 @@ function AdminApp() {
       <form action="/admin/logout" method="POST" className="admin-logout"><input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]').content} /><button type="submit">Sign out</button></form>
     </aside>
     <main className="admin-main">
-      <header className="admin-topbar"><div><span className="admin-eyebrow">{activeGroup.toUpperCase()}</span><h1>{SECTION_LABELS[activeSection] || pretty(activeSection)}</h1></div><div className="admin-actions"><span className="admin-status">{status}</span><a href={activeSection === 'services' ? '/services' : '/'} target="_blank" rel="noreferrer" className="admin-preview">View page ↗</a>{activeSection !== 'users' && activeSection !== 'audit' && <button type="button" className="admin-save" onClick={activeSection === 'settings' ? saveMaintenance : save}>Save changes</button>}</div></header>
-      <section className={`admin-panel ${activeSection === 'services' || activeSection === 'academics' || activeSection === 'about' || activeSection === 'admissions' || activeSection === 'contact' || activeSection === 'pvmo' || activeSection === 'administration' || activeSection === 'home' ? 'admin-panel-wide' : ''}`}><div className="admin-panel-intro"><span>{SECTION_LABELS[activeSection] || pretty(activeSection)}</span><p>{activeSection === 'home' ? 'Manage homepage hero banner, site navigation settings, section visibility, and footer.' : activeSection === 'users' ? 'Create and manage administrator and editor accounts.' : 'Changes are stored in the site database and appear on the public page after refresh.'}</p></div>{activeSection === 'users' ? <UserManagementEditor /> : activeSection === 'audit' ? <AuditLogEditor /> : activeSection === 'settings' ? <SettingsEditor value={activeValue} onChange={(next) => setContent({ ...content, settings: next })} /> : activeSection === 'services' ? <ServicesEditor value={activeValue} onChange={(next) => setContent({ ...content, services: next })} onImageUpload={uploadImage} onSave={(servicesValue) => save({ ...content, ...servicesValue })} /> : activeSection === 'home' ? <HomeEditor content={content} onChange={setContent} onImageUpload={uploadImage} /> : activeSection === 'academics' ? <AcademicsEditor value={activeValue} onChange={(next) => setContent({ ...content, academics: next })} onImageUpload={uploadImage} onSave={save} /> : activeSection === 'about' ? <AboutEditor value={activeValue} onChange={(next) => setContent({ ...content, about: next })} onImageUpload={uploadImage} onAudioUpload={uploadAudio} onSave={save} /> : activeSection === 'administration' ? <AdministrationEditor value={activeValue} onChange={(next) => setContent({ ...content, facultyStaff: next })} onImageUpload={uploadImage} /> : activeSection === 'admissions' ? <AdmissionsEditor value={activeValue} onChange={(next) => setContent({ ...content, admissions: next })} onSave={save} /> : activeSection === 'contact' ? <ContactEditor value={activeValue} onChange={(next) => setContent({ ...content, contact: next })} onSave={save} /> : activeSection === 'hero' ? <HeroEditor value={activeValue} onChange={(next) => setContent({ ...content, hero: next })} onImageUpload={uploadImage} /> : activeSection === 'pvmo' ? <PvmoEditor value={activeValue} onChange={(next) => setContent({ ...content, pvmo: next })} onImageUpload={uploadImage} /> : <Editor value={activeValue} onChange={(next) => setContent({ ...content, [activeSection]: next })} onImageUpload={uploadImage} />}</section>
+      <header className="admin-topbar"><div><span className="admin-eyebrow">{activeGroup.toUpperCase()}</span><h1>{SECTION_LABELS[activeSection] || pretty(activeSection)}</h1></div><div className="admin-actions"><span className="admin-status">{status}</span><a href={activeSection === 'services' ? '/services' : '/'} target="_blank" rel="noreferrer" className="admin-preview">View page ↗</a></div></header>
+      <section className={`admin-panel ${activeSection === 'services' || activeSection === 'academics' || activeSection === 'about' || activeSection === 'admissions' || activeSection === 'contact' || activeSection === 'pvmo' || activeSection === 'administration' || activeSection === 'home' ? 'admin-panel-wide' : ''}`}>
+        <div className="admin-panel-intro"><span>{SECTION_LABELS[activeSection] || pretty(activeSection)}</span><p>{activeSection === 'home' ? 'Manage homepage hero banner, site navigation settings, section visibility, and footer.' : activeSection === 'users' ? 'Create and manage administrator and editor accounts.' : 'Changes are stored in the site database and appear on the public page after refresh.'}</p></div>
+        {activeSection === 'users' ? <UserManagementEditor />
+          : activeSection === 'audit' ? <AuditLogEditor />
+          : activeSection === 'settings' ? <SettingsEditor value={activeValue} onChange={(next) => setContent({ ...content, settings: next })} onSave={saveMaintenance} saveStatus={status} />
+          : activeSection === 'services' ? <ServicesEditor value={activeValue} onChange={(next) => setContent({ ...content, services: next })} onImageUpload={uploadImage} onSave={(servicesValue) => save({ ...content, ...servicesValue })} saveStatus={status} />
+          : activeSection === 'home' ? <HomeEditor content={content} onChange={setContent} onImageUpload={uploadImage} onSave={save} saveStatus={status} />
+          : activeSection === 'academics' ? <AcademicsEditor value={activeValue} onChange={(next) => setContent({ ...content, academics: next })} onImageUpload={uploadImage} onSave={save} saveStatus={status} />
+          : activeSection === 'about' ? <AboutEditor value={activeValue} onChange={(next) => setContent({ ...content, about: next })} onImageUpload={uploadImage} onAudioUpload={uploadAudio} onSave={save} saveStatus={status} />
+          : activeSection === 'administration' ? <AdministrationEditor value={activeValue} onChange={(next) => setContent({ ...content, facultyStaff: next })} onImageUpload={uploadImage} onSave={save} saveStatus={status} />
+          : activeSection === 'admissions' ? <AdmissionsEditor value={activeValue} onChange={(next) => setContent({ ...content, admissions: next })} onSave={save} saveStatus={status} />
+          : activeSection === 'contact' ? <ContactEditor value={activeValue} onChange={(next) => setContent({ ...content, contact: next })} onSave={save} saveStatus={status} />
+          : activeSection === 'hero' ? <HeroEditor value={activeValue} onChange={(next) => setContent({ ...content, hero: next })} onImageUpload={uploadImage} onSave={save} saveStatus={status} />
+          : activeSection === 'pvmo' ? <PvmoEditor value={activeValue} onChange={(next) => setContent({ ...content, pvmo: next })} onImageUpload={uploadImage} onSave={save} saveStatus={status} />
+          : <><Editor value={activeValue} onChange={(next) => setContent({ ...content, [activeSection]: next })} onImageUpload={uploadImage} /><SectionSaveAction onSave={save} status={status} /></>}
+      </section>
     </main>
   </div>;
 }
