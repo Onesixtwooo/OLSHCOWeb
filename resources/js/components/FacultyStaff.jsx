@@ -27,9 +27,9 @@ export default function FacultyStaff({ content = {} }) {
         {Object.entries(grouped).map(([department, people]) => <section className="directory-group" key={department}>
           <div className="directory-group-heading"><span>Our people</span><div><h2>{department}</h2>{departmentDetails.find((item) => item.name === department)?.description && <p>{departmentDetails.find((item) => item.name === department).description}</p>}</div></div>
           <div className="directory-grid">
-            {people.map((person, index) => { const image = person.image || person.photo; return <article className={`directory-card ${image ? 'has-image' : 'no-image'}`} key={`${person.name}-${index}`}>
-              {image && <img className="directory-card-image" src={image} alt={person.name || 'Staff member'} />}
-              <div className="directory-card-body"><h3>{person.name}</h3>{image && <><p>{person.role}</p>{person.email && <a href={`mailto:${person.email}`}>{person.email}</a>}</>}</div>
+            {people.map((person, index) => { const profileImage = String(person.image || person.photo || '').trim(); const hasProfileImage = !!profileImage; return <article className={`directory-card has-image${hasProfileImage ? '' : ' is-logo-fallback'}`} key={`${person.name}-${index}`}>
+              <img className="directory-card-image" src={profileImage || '/images/logo.png'} alt={hasProfileImage ? (person.name || 'Staff member') : 'OLSHCO logo'} />
+              <div className="directory-card-body"><h3>{person.name}</h3>{person.role && <p>{person.role}</p>}{person.email && <a href={`mailto:${person.email}`}>{person.email}</a>}</div>
             </article>; })}
           </div>
         </section>)}
