@@ -2,56 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\PageSetting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminController extends Controller
 {
     public function showLogin(): View|RedirectResponse
     {
-        if (User::query()->doesntExist()) {
-            return redirect()->route('admin.setup');
-        }
-
-        return view('admin.auth', ['mode' => 'login']);
-    }
-
-    public function showSetup(): View|RedirectResponse
-    {
-        if (User::query()->exists()) {
-            return redirect()->route('admin.login');
-        }
-
-        return view('admin.auth', ['mode' => 'setup']);
-    }
-
-    public function setup(Request $request): RedirectResponse
-    {
-        abort_if(User::query()->exists(), 403);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:10', 'confirmed'],
+        return view('admin.auth', [
+            'mode' => 'login',
+            'noAdmins' => User::query()->doesntExist(),
         ]);
-
-        $user = User::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('admin.dashboard');
     }
 
     public function login(Request $request): RedirectResponse
@@ -62,16 +33,71 @@ class AdminController extends Controller
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            AuditLog::record('auth.login_failed', metadata: ['email' => $credentials['email']]);
+
             return back()->withErrors(['email' => 'The email or password is incorrect.'])->onlyInput('email');
         }
 
+        if (config('auth.require_email_verification') && ! Auth::user()->hasVerifiedEmail()) {
+            Auth::user()->sendEmailVerificationNotification();
+            Auth::logout();
+
+            return redirect()->route('admin.verification.notice')->with('status', 'Please verify your email address before signing in. A new verification link was sent.');
+        }
+
         $request->session()->regenerate();
+        $request->session()->put('auth_session_version', Auth::user()->session_version);
+        AuditLog::record('auth.login', Auth::user());
 
         return redirect()->intended(route('admin.dashboard'));
     }
 
+    public function showForgotPassword(): View
+    {
+        return view('admin.forgot-password');
+    }
+
+    public function sendResetLink(Request $request): RedirectResponse
+    {
+        $validated = $request->validate(['email' => ['required', 'email', 'max:190']]);
+        $status = Password::sendResetLink(['email' => $validated['email']]);
+
+        return back()->with('status', __($status));
+    }
+
+    public function showResetPassword(string $token): View
+    {
+        return view('admin.reset-password', ['token' => $token, 'email' => request('email')]);
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:10', 'confirmed'],
+        ]);
+
+        $status = Password::reset($validated, function (User $user, string $password): void {
+            $user->forceFill([
+                'password' => $password,
+                'remember_token' => Str::random(60),
+                'session_version' => $user->session_version + 1,
+            ])->save();
+        });
+
+        if ($status === Password::PASSWORD_RESET) {
+            AuditLog::record('auth.password_reset', User::query()->where('email', $validated['email'])->first());
+        }
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('admin.login')->with('status', __($status))
+            : back()->withErrors(['email' => __($status)])->withInput($request->only('email'));
+    }
+
     public function logout(Request $request): RedirectResponse
     {
+        AuditLog::record('auth.logout', $request->user());
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -85,6 +111,7 @@ class AdminController extends Controller
 
         return view('admin.dashboard', [
             'savedContent' => $setting?->value ?? [],
+            'isAdmin' => auth()->user()?->isAdmin() ?? false,
         ]);
     }
 
@@ -98,11 +125,21 @@ class AdminController extends Controller
     public function updateContent(Request $request): JsonResponse
     {
         $validated = $request->validate(['content' => ['required', 'array']]);
+        $content = $validated['content'];
+        $setting = PageSetting::query()->firstOrCreate(['key' => 'homepage'], ['value' => []]);
 
-        PageSetting::query()->updateOrCreate(
-            ['key' => 'homepage'],
-            ['value' => $validated['content']],
-        );
+        // Settings are managed by administrators through dedicated endpoints.
+        if (! $request->user()->isAdmin()) {
+            $savedContent = $setting->value ?? [];
+            if (array_key_exists('settings', $savedContent)) {
+                $content['settings'] = $savedContent['settings'];
+            } else {
+                unset($content['settings']);
+            }
+        }
+
+        $setting->update(['value' => $content]);
+        AuditLog::record('content.updated', metadata: ['section' => 'homepage']);
 
         return response()->json(['message' => 'Homepage changes saved.']);
     }
@@ -121,22 +158,43 @@ class AdminController extends Controller
         $content = $setting->value ?? [];
         $content['settings']['maintenance'] = $maintenance;
         $setting->update(['value' => $content]);
+        AuditLog::record('settings.maintenance_updated', metadata: ['enabled' => $maintenance['enabled']]);
 
         return response()->json(['message' => 'Maintenance settings saved.', 'maintenance' => $maintenance]);
     }
 
     public function uploadProgramImage(Request $request): JsonResponse
     {
-        $validated = $request->validate(['image' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192']]);
-        $path = $validated['image']->store('program-images', 'public');
+        $validated = $request->validate(['image' => ['required', 'file', 'max:8192']]);
+        $image = $validated['image'];
+        $mime = $image->getMimeType();
+        $imageInfo = @getimagesize($image->getRealPath());
+        $imageTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        if (! isset($imageTypes[$mime]) || $imageInfo === false || $imageInfo[0] > 6000 || $imageInfo[1] > 6000) {
+            throw ValidationException::withMessages(['image' => 'Upload a valid JPG, PNG, or WebP image no larger than 6000 by 6000 pixels.']);
+        }
+        $path = $image->storeAs('program-images', Str::uuid().'.'.$imageTypes[$mime], 'public');
+        AuditLog::record('upload.program_image', metadata: ['mime' => $mime, 'size' => $image->getSize()]);
+
         return response()->json(['url' => Storage::disk('public')->url($path)]);
     }
 
     public function uploadHymnAudio(Request $request): JsonResponse
     {
-        $validated = $request->validate(['audio' => ['required', 'file', 'mimes:mp3,wav,ogg,m4a,aac,mp4,webm,mov', 'max:51200']]);
-        $path = $validated['audio']->store('school-hymn', 'public');
-        $mime = $validated['audio']->getMimeType() ?: '';
+        $validated = $request->validate(['audio' => ['required', 'file', 'max:51200']]);
+        $audio = $validated['audio'];
+        $mime = $audio->getMimeType() ?: '';
+        $audioTypes = [
+            'audio/mpeg' => 'mp3', 'audio/wav' => 'wav', 'audio/x-wav' => 'wav',
+            'audio/ogg' => 'ogg', 'audio/mp4' => 'm4a', 'audio/aac' => 'aac',
+            'video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/quicktime' => 'mov',
+        ];
+        if (! isset($audioTypes[$mime])) {
+            throw ValidationException::withMessages(['audio' => 'Upload a supported audio or video file.']);
+        }
+        $path = $audio->storeAs('school-hymn', Str::uuid().'.'.$audioTypes[$mime], 'public');
+        AuditLog::record('upload.hymn_media', metadata: ['mime' => $mime, 'size' => $audio->getSize()]);
+
         return response()->json(['url' => Storage::disk('public')->url($path), 'mime' => $mime, 'type' => str_starts_with($mime, 'video/') ? 'video' : 'audio']);
     }
 }

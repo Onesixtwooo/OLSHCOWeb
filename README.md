@@ -23,6 +23,18 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 ## Learning Laravel
 
+## Admin provisioning
+
+Administrator accounts are created from the server console. The public first-time setup page is disabled.
+
+After connecting over SSH and entering the application directory, run:
+
+```bash
+php artisan admin:create
+```
+
+The command prompts for the administrator name, email, and password. Omit `--password` to keep password entry hidden.
+
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.

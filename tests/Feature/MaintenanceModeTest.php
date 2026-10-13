@@ -71,4 +71,40 @@ class MaintenanceModeTest extends TestCase
             'message' => 'Back soon',
         ])->assertUnauthorized();
     }
+
+    public function test_editor_content_updates_preserve_administrator_settings(): void
+    {
+        PageSetting::query()->create(['key' => 'homepage', 'value' => [
+            'settings' => ['maintenance' => ['enabled' => false, 'title' => 'Normal', 'message' => '']],
+            'site' => ['brand' => 'Original'],
+        ]]);
+        $this->actingAs(User::factory()->create(['role' => 'editor']));
+        $this->get('/admin/settings/edit')->assertForbidden();
+
+        $this->putJson('/admin/content', ['content' => [
+            'settings' => ['maintenance' => ['enabled' => true, 'title' => 'Forged', 'message' => '']],
+            'site' => ['brand' => 'Edited'],
+        ]])->assertOk();
+
+        $saved = PageSetting::query()->where('key', 'homepage')->first()->value;
+        $this->assertSame('Edited', $saved['site']['brand']);
+        $this->assertSame('Normal', $saved['settings']['maintenance']['title']);
+        $this->assertFalse($saved['settings']['maintenance']['enabled']);
+
+        $this->putJson('/admin/content', ['content' => ['site' => ['brand' => 'Edited again']]])->assertOk();
+        $this->assertSame('Normal', PageSetting::query()->where('key', 'homepage')->first()->value['settings']['maintenance']['title']);
+    }
+
+    public function test_editor_cannot_create_maintenance_settings_through_content_update(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'editor']))
+            ->putJson('/admin/content', ['content' => [
+                'site' => ['brand' => 'Edited'],
+                'settings' => ['maintenance' => ['enabled' => true]],
+            ]])->assertOk();
+
+        $saved = PageSetting::query()->where('key', 'homepage')->first()->value;
+        $this->assertSame('Edited', $saved['site']['brand']);
+        $this->assertArrayNotHasKey('settings', $saved);
+    }
 }

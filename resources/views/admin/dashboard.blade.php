@@ -11,5 +11,6 @@
 <body>
     <div id="admin-app"></div>
     <script>window.__OLSHCO_ADMIN_CONTENT__ = {{ Illuminate\Support\Js::from($savedContent) }};</script>
+    <script>window.__OLSHCO_ADMIN_USER__ = {{ Illuminate\Support\Js::from(['isAdmin' => $isAdmin ?? false]) }};</script>
 </body>
 </html>

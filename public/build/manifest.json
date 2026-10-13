@@ -4,7 +4,7 @@
     "name": "RichText"
   },
   "resources/js/admin.jsx": {
-    "file": "assets/admin-DfTERnb6.js",
+    "file": "assets/admin-DWpR0ZDd.js",
     "name": "admin",
     "src": "resources/js/admin.jsx",
     "isEntry": true,
@@ -12,7 +12,7 @@
       "_RichText-XPCrjLlo.js"
     ],
     "css": [
-      "assets/admin-Ch8FFZpg.css"
+      "assets/admin-hYalGv7i.css"
     ]
   },
   "resources/js/app.jsx": {
