@@ -47,9 +47,8 @@ export default function Admissions({ content = {} }) {
             />
             <div className="spotlight-meta"><span className="spotlight-meta-number">{String(steps.length).padStart(2, '0')}</span><span>steps to enrollment</span></div>
             <a href="#contact" className="btn btn-light admissions-spotlight-button" onClick={(e) => { e.preventDefault(); document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' }); }}>
-              {content.spotlightButton || 'Contact Admissions Office'} <ArrowIcon />
+              {content.spotlightButton || "Contact Registrar's Office"} <ArrowIcon />
             </a>
-            <div className="admissions-faith-badge"><StepIcon type="heart" /><span>Faith<br /><strong>Forms Brighter<br />Futures</strong></span></div>
           </aside>
 
           <div className="admissions-steps-grid">
@@ -66,7 +65,6 @@ export default function Admissions({ content = {} }) {
           </div>
         </div>
 
-        <div className="admissions-reference-footer">Faith&nbsp;&nbsp;•&nbsp;&nbsp;Learning&nbsp;&nbsp;•&nbsp;&nbsp;Service&nbsp;&nbsp;•&nbsp;&nbsp;Community</div>
       </div>
     </section>
   );

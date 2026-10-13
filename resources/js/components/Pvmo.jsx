@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Particles from './Particles';
 import RichText from './RichText';
 import { getStoredTheme } from './ThemeToggle';
+import CoreValueIcon from './CoreValueIcon';
 
 // Icons matching the reference design
 const BookIcon = () => (
@@ -32,33 +33,6 @@ const HeartIcon = () => (
   </svg>
 );
 
-const CrossIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-    <path d="M12 3v18M6 8h12" />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-  </svg>
-);
-
-// Map value titles to appropriate icons
-const getValueIcon = (title = '') => {
-  const t = title.toLowerCase();
-  if (t.includes('faith') || t.includes('god') || t.includes('catholic')) return <CrossIcon />;
-  if (t.includes('excel') || t.includes('quality') || t.includes('academic')) return <StarIcon />;
-  if (t.includes('leader') || t.includes('communit') || t.includes('people')) return <UsersIcon />;
-  return <HeartIcon />;
-};
-
 export default function Pvmo({ content = {} }) {
   const [theme, setTheme] = useState(getStoredTheme);
 
@@ -77,8 +51,6 @@ export default function Pvmo({ content = {} }) {
   const description = content.description || 'The guiding principles and spiritual cornerstone that define our commitment to holistic Christian education at OLSHCO.';
 
   const philosophy = content.philosophy || 'OLSHCO believes in holistic education that nurtures the mind, touches the heart, and forms learners rooted in faith, compassion, and service.';
-  const philosophyKicker = content.philosophyKicker || 'WHOLE PERSON.\nBRIGHTER TOMORROWS.';
-  const philosophyScript = content.philosophyScript || 'Mind Heart Faith Service';
 
   const vision = content.vision || 'A premier Catholic academic community recognized for transformative education, spiritual depth, and ethical leadership in service of God, country, and society.';
   const visionKicker = content.visionKicker || 'A BRIGHTER TOMORROW';
@@ -93,31 +65,11 @@ export default function Pvmo({ content = {} }) {
 
   const coreValues = Array.isArray(content.coreValues) ? content.coreValues : [];
 
-  const watermarkText = content.watermarkText || 'EDUCATION\nIN FAITH\nFOR A MORE\nHUMAN WORLD';
-  const scriptText = content.scriptText || 'Faith\nForms\nBrighter\nTomorrows';
   const footerMark = content.footerMark || 'OUR LADY OF THE SACRED HEART COLLEGE';
   const footerSub = content.footerSub || 'Faith · Formation · A Brighter Tomorrow';
 
   return (
     <section className="pvmo-ref-section section" id="pvmo">
-      {/* Background Decorative Watermarks */}
-      <div className="pvmo-watermark-left" aria-hidden="true">
-        <svg className="pvmo-cross-svg" viewBox="0 0 100 150" fill="none" stroke="currentColor">
-          <path d="M50 10 V140 M16 48 H84" strokeWidth="7" strokeLinecap="round" />
-        </svg>
-        <div className="pvmo-cross-text">
-          {watermarkText.split('\n').map((line, idx) => (
-            <span key={idx}>{line}</span>
-          ))}
-        </div>
-      </div>
-
-      <div className="pvmo-script-right" aria-hidden="true">
-        {scriptText.split('\n').map((line, idx) => (
-          <span key={idx}>{line}</span>
-        ))}
-      </div>
-
       <div className="pvmo-botanical-right" aria-hidden="true">
         <svg viewBox="0 0 200 240" fill="none">
           <path d="M190 230 C 140 180, 110 120, 130 30" stroke="rgba(147, 197, 253, 0.45)" strokeWidth="3" strokeLinecap="round" />
@@ -163,20 +115,6 @@ export default function Pvmo({ content = {} }) {
               <h3 className="pvmo-philo-title">Philosophy</h3>
               <RichText as="div" className="pvmo-philo-body" content={philosophy} />
 
-              {(Boolean(philosophyKicker?.trim()) || Boolean(philosophyScript?.trim())) && (
-                <div className="pvmo-philo-bottom">
-                  {Boolean(philosophyKicker?.trim()) && (
-                    <div className="pvmo-philo-kicker">
-                      {philosophyKicker.split('\n').map((line, idx) => (
-                        <span key={idx}>{line}</span>
-                      ))}
-                    </div>
-                  )}
-                  {Boolean(philosophyScript?.trim()) && (
-                    <div className="pvmo-philo-script">{philosophyScript}</div>
-                  )}
-                </div>
-              )}
             </div>
           </article>
 
@@ -232,7 +170,7 @@ export default function Pvmo({ content = {} }) {
                   const vDesc = isObj ? val.description : '';
                   return (
                     <div key={idx} className="pvmo-value-pill">
-                      <span className="pvmo-pill-icon">{getValueIcon(vTitle)}</span>
+                      <span className="pvmo-pill-icon"><CoreValueIcon icon={isObj ? val.icon : undefined} title={vTitle} /></span>
                       <div className="pvmo-pill-text">
                         <strong className="pvmo-pill-title">{vTitle}</strong>
                         {vDesc && <RichText as="small" className="pvmo-pill-desc" content={vDesc} />}

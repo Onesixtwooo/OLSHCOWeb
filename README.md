@@ -35,6 +35,8 @@ php artisan admin:create
 
 The command prompts for the administrator name, email, and password. Omit `--password` to keep password entry hidden.
 
+Administrators can invite additional accounts from **Admin > Users**. The new user receives a one-time link to set their own password; no password is sent by email. Configure `MAIL_MAILER`, SMTP settings, and `APP_URL` for the deployed site before sending invitations. The link expires after the password reset period configured in `config/auth.php` (60 minutes by default). If mail delivery fails, the account is not created.
+
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.

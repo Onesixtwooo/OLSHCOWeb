@@ -61,8 +61,7 @@
 .admissions-reference .admissions-spotlight h3,
 .admissions-reference .admissions-spotlight > p,
 .admissions-reference .spotlight-meta,
-.admissions-reference .admissions-spotlight-button,
-.admissions-reference .admissions-faith-badge {
+.admissions-reference .admissions-spotlight-button {
   position: relative;
   z-index: 2;
 }
@@ -85,26 +84,6 @@
 }
 
 .admissions-reference .admissions-spotlight-button svg { width: 20px; height: 20px; }
-
-.admissions-faith-badge {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  width: 176px;
-  min-height: 104px;
-  margin-top: 26px;
-  margin-left: 0;
-  padding: 17px 16px;
-  border-radius: 20px;
-  color: #183d88;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 14px 28px rgba(4, 30, 79, 0.2);
-  font-size: 0.74rem;
-  line-height: 1.35;
-}
-
-.admissions-faith-badge svg { width: 25px; height: 25px; color: var(--color-primary); flex: 0 0 25px; }
-.admissions-faith-badge strong { font-size: 0.82rem; }
 
 .admissions-reference .admissions-steps-grid {
   display: flex;
@@ -209,14 +188,6 @@
 
 .admission-step-arrow svg { width: 20px; height: 20px; }
 
-.admissions-reference-footer {
-  margin: 44px 0 0 auto;
-  color: #91a3c1;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-align: right;
-}
-
 @media (max-width: 1024px) {
   .admissions-reference .admissions-layout { grid-template-columns: 1fr; }
   .admissions-reference .admissions-spotlight { min-height: 520px; }
@@ -227,7 +198,6 @@
   .admissions-reference .admissions-reference-header { margin-bottom: 34px; }
   .admissions-reference .admissions-spotlight { min-height: 520px; padding: 34px 28px; }
   .admissions-reference .admissions-spotlight h3 { font-size: 3rem; }
-  .admissions-faith-badge { margin-left: 0; }
   .admissions-reference .admissions-steps-grid::before { left: 24px; }
   .admissions-reference .admission-step-card { gap: 10px; align-items: flex-start; }
   .admission-step-marker { width: 50px; height: 50px; flex-basis: 50px; border-width: 4px; font-size: 0.92rem; }
@@ -237,7 +207,6 @@
   .admission-step-copy h3 { font-size: 0.98rem; }
   .admission-step-copy p { font-size: 0.78rem; }
   .admission-step-arrow { display: none; }
-  .admissions-reference-footer { margin-top: 30px; text-align: left; }
 }
 
 /* =============================================
@@ -288,16 +257,6 @@
   color: #4c0519 !important;
 }
 
-[data-theme="maroon"] .admissions-faith-badge {
-  color: #4c0519 !important;
-  background: rgba(255, 255, 255, 0.98) !important;
-  box-shadow: 0 14px 28px rgba(60, 2, 12, 0.22) !important;
-}
-
-[data-theme="maroon"] .admissions-faith-badge svg {
-  color: #800000 !important;
-}
-
 [data-theme="maroon"] .admissions-reference .admissions-steps-grid::before {
   background: repeating-linear-gradient(to bottom, #f43f5e 0 4px, transparent 4px 10px) !important;
 }
@@ -340,9 +299,5 @@
   background: #800000 !important;
   color: #ffffff !important;
   border-color: #800000 !important;
-}
-
-[data-theme="maroon"] .admissions-reference-footer {
-  color: #9f1239 !important;
 }
 

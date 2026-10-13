@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Notifications\AccountInvitation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -29,18 +33,32 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
             'role' => ['required', Rule::in(['admin', 'editor'])],
-            'password' => ['required', 'string', 'min:10', 'confirmed'],
         ]);
 
-        $user = User::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
-        ]);
-        AuditLog::record('user.created', $user, ['role' => $user->role]);
+        try {
+            $user = DB::transaction(function () use ($validated): User {
+                $user = User::query()->create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'role' => $validated['role'],
+                    'password' => Hash::make(Str::random(64)),
+                ]);
 
-        return response()->json(['user' => $user->only(['id', 'name', 'email', 'role', 'created_at'])], 201);
+                $user->notify(new AccountInvitation(Password::broker()->createToken($user)));
+                AuditLog::record('user.invited', $user, ['role' => $user->role]);
+
+                return $user;
+            });
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json(['message' => 'Unable to send the invitation. Check mail delivery and try again.'], 503);
+        }
+
+        return response()->json([
+            'message' => 'Invitation sent.',
+            'user' => $user->only(['id', 'name', 'email', 'role', 'created_at']),
+        ], 201);
     }
 
     public function update(Request $request, User $user): JsonResponse

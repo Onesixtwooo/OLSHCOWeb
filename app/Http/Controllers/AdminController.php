@@ -81,6 +81,7 @@ class AdminController extends Controller
         $status = Password::reset($validated, function (User $user, string $password): void {
             $user->forceFill([
                 'password' => $password,
+                'email_verified_at' => $user->email_verified_at ?? now(),
                 'remember_token' => Str::random(60),
                 'session_version' => $user->session_version + 1,
             ])->save();

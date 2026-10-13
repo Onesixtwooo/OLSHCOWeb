@@ -5,7 +5,7 @@ import ThemeToggle from './ThemeToggle';
 const FOOTER_LINKS = {
   'Quick Links': ['Home', 'About Us', 'Academics', 'Admissions', 'Services', 'Contact'],
   Programs: ['Elementary', 'Junior High School', 'Senior High School', 'Extracurriculars'],
-  Resources: ['School Calendar', 'Student Portal', 'Parent Portal', 'News and Events'],
+  Resources: ['School Calendar'],
 };
 
 export default function Footer({ site = {}, content = {} }) {

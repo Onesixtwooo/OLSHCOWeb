@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DEFAULT_HOMEPAGE_CONTENT, mergeHomepageContent } from './content/homepageContent';
 import RichTextEditor from './components/RichTextEditor';
+import CoreValueIcon, { CORE_VALUE_ICONS, coreValueIconFor } from './components/CoreValueIcon';
 import '../css/admin.css';
 
 const SECTION_LABELS = {
@@ -1039,7 +1040,6 @@ const PVMO_SECTIONS = [
   { id: 'vision', label: 'Vision' },
   { id: 'mission', label: 'Mission' },
   { id: 'values', label: 'Core Values' },
-  { id: 'watermarks', label: 'Background Watermarks & Scripts' },
   { id: 'footer', label: 'Section Footer' },
 ];
 
@@ -1074,7 +1074,7 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
     if (typeof next[index] === 'object' && next[index] !== null) {
       next[index] = { ...next[index], [field]: text };
     } else {
-      next[index] = { title: field === 'title' ? text : next[index], description: field === 'description' ? text : '' };
+      next[index] = { title: String(next[index] || ''), description: '', [field]: text };
     }
     onChange({ ...value, coreValues: next });
   };
@@ -1082,7 +1082,7 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
   const addCoreValue = () => {
     onChange({
       ...value,
-      coreValues: [...coreValues, { title: 'New Core Value', description: 'Description of this value' }],
+      coreValues: [...coreValues, { title: 'New Core Value', description: 'Description of this value', icon: 'heart' }],
     });
   };
 
@@ -1155,7 +1155,7 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         id="philosophy"
         icon="📖"
         title="Philosophy"
-        subtitle="Educational philosophy, kicker, script, and statue image"
+        subtitle="Educational philosophy and statue image"
         isOpen={!!openSections.philosophy}
         onToggle={toggleSection}
       >
@@ -1166,16 +1166,6 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
             onChange={set('philosophy')}
             placeholder="State the school's philosophy..."
           />
-        </div>
-        <div className="hero-editor-grid">
-          <label className="admin-field">
-            <span>Kicker (Uppercase)</span>
-            <input value={value.philosophyKicker || ''} onChange={(e) => set('philosophyKicker')(e.target.value)} placeholder="e.g. WHOLE PERSON.\nBRIGHTER TOMORROWS." />
-          </label>
-          <label className="admin-field">
-            <span>Cursive Script</span>
-            <input value={value.philosophyScript || ''} onChange={(e) => set('philosophyScript')(e.target.value)} placeholder="e.g. Mind Heart Faith Service" />
-          </label>
         </div>
         <div className="admin-field hero-editor-full">
           <span>Statue Photo / Campus Image</span>
@@ -1288,6 +1278,7 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
             const isObj = typeof item === 'object' && item !== null;
             const itemTitle = isObj ? item.title : item;
             const itemDesc = isObj ? item.description : '';
+            const itemIcon = coreValueIconFor(isObj ? item.icon : undefined, itemTitle);
 
             return (
               <div key={index} className="admin-array-card">
@@ -1312,6 +1303,15 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
                       placeholder="e.g. Deep love for God..."
                     />
                   </label>
+                  <label className="admin-field hero-editor-full">
+                    <span>Icon</span>
+                    <span className="admin-core-value-icon-picker">
+                      <span className="admin-core-value-icon-preview"><CoreValueIcon icon={itemIcon} /></span>
+                      <select value={itemIcon} onChange={(e) => updateCoreValue(index, 'icon', e.target.value)}>
+                        {CORE_VALUE_ICONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                      </select>
+                    </span>
+                  </label>
                 </div>
               </div>
             );
@@ -1319,44 +1319,7 @@ function PvmoEditor({ value = {}, onChange, onImageUpload }) {
         </div>
       </CollapsibleSection>
 
-      {/* 6. Background Watermarks & Decorative Scripts */}
-      <CollapsibleSection
-        id="watermarks"
-        icon="✨"
-        title="Background Watermarks & Scripts"
-        subtitle="Decorative background text displayed across the top of the PVMO section"
-        isOpen={!!openSections.watermarks}
-        onToggle={toggleSection}
-      >
-        <div className="hero-editor-grid">
-          <label className="admin-field">
-            <span>Left Cross Watermark Text</span>
-            <textarea
-              value={value.watermarkText || ''}
-              onChange={(e) => set('watermarkText')(e.target.value)}
-              rows={4}
-              placeholder={'EDUCATION\nIN FAITH\nFOR A MORE\nHUMAN WORLD'}
-            />
-            <small style={{ color: '#8492a8', fontSize: '11px', marginTop: '2px' }}>
-              Tip: Use Enter for line breaks (displayed beside the background cross on the left)
-            </small>
-          </label>
-          <label className="admin-field">
-            <span>Right Cursive Script Watermark</span>
-            <textarea
-              value={value.scriptText || ''}
-              onChange={(e) => set('scriptText')(e.target.value)}
-              rows={4}
-              placeholder={'Faith\nForms\nBrighter\nTomorrows'}
-            />
-            <small style={{ color: '#8492a8', fontSize: '11px', marginTop: '2px' }}>
-              Tip: Use Enter for line breaks (displayed as cursive script on the top right)
-            </small>
-          </label>
-        </div>
-      </CollapsibleSection>
-
-      {/* 7. Footer Branding */}
+      {/* 6. Footer Branding */}
       <CollapsibleSection
         id="footer"
         icon="✦"
@@ -1602,7 +1565,8 @@ function SettingsEditor({ value = {}, onChange }) {
 function UserManagementEditor() {
   const [users, setUsers] = useState([]);
   const [status, setStatus] = useState('Loading users…');
-  const [form, setForm] = useState({ name: '', email: '', role: 'editor', password: '', password_confirmation: '' });
+  const [form, setForm] = useState({ name: '', email: '', role: 'editor' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 
   const loadUsers = async () => {
@@ -1617,20 +1581,28 @@ function UserManagementEditor() {
 
   const createUser = async (event) => {
     event.preventDefault();
-    setStatus('Creating user…');
-    const response = await fetch('/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf() },
-      body: JSON.stringify(form),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      setStatus(data.message || Object.values(data.errors || {}).flat()[0] || 'Unable to create user.');
-      return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setStatus('Sending invitation…');
+    try {
+      const response = await fetch('/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf() },
+        body: JSON.stringify(form),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setStatus(Object.values(data.errors || {}).flat()[0] || data.message || 'Unable to send invitation.');
+        return;
+      }
+      setUsers((current) => [data.user, ...current]);
+      setForm({ name: '', email: '', role: 'editor' });
+      setStatus(data.message || 'Invitation sent.');
+    } catch {
+      setStatus('Unable to reach the server. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    setUsers((current) => [data.user, ...current]);
-    setForm({ name: '', email: '', role: 'editor', password: '', password_confirmation: '' });
-    setStatus('User created.');
   };
 
   const removeUser = async (user) => {
@@ -1647,15 +1619,21 @@ function UserManagementEditor() {
   }
 
   return <div className="admin-users-editor">
+    {isSubmitting && <div className="admin-invite-loading" role="status" aria-live="polite">
+      <div className="admin-invite-loading-card">
+        <span className="admin-invite-spinner" aria-hidden="true" />
+        <strong>Sending invitation…</strong>
+        <p>We’re emailing the account setup link. This may take a moment.</p>
+      </div>
+    </div>}
     <div className="admin-academics-overview">
-      <div className="admin-group-label"><span>Add user</span><small>Editors can update public content. Administrators can also manage users.</small></div>
-      <form className="admin-user-form" onSubmit={createUser}>
-        <label className="admin-field"><span>Name</span><input required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
-        <label className="admin-field"><span>Email</span><input required type="email" maxLength={190} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
-        <label className="admin-field"><span>Role</span><select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}><option value="editor">Editor</option><option value="admin">Administrator</option></select></label>
-        <label className="admin-field"><span>Password</span><input required minLength={10} type="password" autoComplete="new-password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label>
-        <label className="admin-field"><span>Confirm password</span><input required minLength={10} type="password" autoComplete="new-password" value={form.password_confirmation} onChange={(event) => setForm({ ...form, password_confirmation: event.target.value })} /></label>
-        <button className="admin-user-submit" type="submit">Create user</button>
+      <div className="admin-group-label"><span>Invite user</span><small>Editors can update public content. Administrators can also manage users.</small></div>
+      <form className="admin-user-form" onSubmit={createUser} aria-busy={isSubmitting}>
+        <label className="admin-field"><span>Name</span><input required disabled={isSubmitting} maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+        <label className="admin-field"><span>Email</span><input required disabled={isSubmitting} type="email" maxLength={190} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
+        <label className="admin-field"><span>Role</span><select disabled={isSubmitting} value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}><option value="editor">Editor</option><option value="admin">Administrator</option></select></label>
+        <p className="admin-settings-note">We will email a link to this address so the user can set their own password.</p>
+        <button className="admin-user-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Sending invitation…' : 'Send invitation'}</button>
       </form>
     </div>
     <div className="admin-academics-overview">

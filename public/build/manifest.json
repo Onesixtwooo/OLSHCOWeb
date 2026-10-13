@@ -1,30 +1,30 @@
 {
-  "_RichText-XPCrjLlo.js": {
-    "file": "assets/RichText-XPCrjLlo.js",
-    "name": "RichText"
+  "_CoreValueIcon-BAuWChSV.js": {
+    "file": "assets/CoreValueIcon-BAuWChSV.js",
+    "name": "CoreValueIcon"
   },
   "resources/js/admin.jsx": {
-    "file": "assets/admin-DWpR0ZDd.js",
+    "file": "assets/admin-DC_NHWsG.js",
     "name": "admin",
     "src": "resources/js/admin.jsx",
     "isEntry": true,
     "imports": [
-      "_RichText-XPCrjLlo.js"
+      "_CoreValueIcon-BAuWChSV.js"
     ],
     "css": [
-      "assets/admin-hYalGv7i.css"
+      "assets/admin-j_0I13fa.css"
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DWEU2Pwi.js",
+    "file": "assets/app-BR8Ph86n.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
     "imports": [
-      "_RichText-XPCrjLlo.js"
+      "_CoreValueIcon-BAuWChSV.js"
     ],
     "css": [
-      "assets/app-BVaBfhe1.css"
+      "assets/app-B4l6yELQ.css"
     ]
   }
 }

@@ -2,7 +2,7 @@
    PVMO REFERENCE DESIGN (Exact Match to Design Mockup)
    ========================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 .pvmo-ref-section {
   position: relative;
@@ -12,65 +12,7 @@
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
 }
 
-/* ---------------------------------------------
-   Background Watermarks (Cross, Script, Leaf)
-   --------------------------------------------- */
-.pvmo-watermark-left {
-  position: absolute;
-  top: 40px;
-  left: clamp(20px, 4vw, 60px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.pvmo-cross-svg {
-  width: 54px;
-  height: 84px;
-  color: #c7ddf8;
-  stroke: #c7ddf8;
-}
-
-.pvmo-cross-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: #7b9ec9;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  line-height: 1.35;
-  text-transform: uppercase;
-}
-
-.pvmo-script-right {
-  position: absolute;
-  top: 40px;
-  right: clamp(24px, 5vw, 75px);
-  display: flex;
-  flex-direction: column;
-  font-family: 'Caveat', cursive;
-  font-size: clamp(2rem, 3.2vw, 2.85rem);
-  font-weight: 700;
-  color: #9cbde9;
-  line-height: 0.95;
-  transform: rotate(-10deg);
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 0;
-  text-align: left;
-}
-
 /* The standalone About page keeps the PVMO cards focused on their content. */
-.about-page .pvmo-watermark-left,
-.about-page .pvmo-script-right {
-  display: none;
-}
-
-.about-page .pvmo-philo-bottom,
 .about-page .pvmo-footer-mark {
   display: none;
 }
@@ -262,40 +204,6 @@
 
 .pvmo-philo-body p:empty {
   display: none;
-}
-
-.pvmo-philo-bottom {
-  margin-top: auto;
-  padding-top: 32px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.pvmo-philo-kicker {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.65);
-  text-transform: uppercase;
-  line-height: 1.45;
-}
-
-.pvmo-philo-script {
-  margin-top: 0;
-  font-family: 'Caveat', cursive;
-  font-size: clamp(1.45rem, 1.9vw, 1.8rem);
-  font-weight: 700;
-  color: #60a5fa;
-  line-height: 1.1;
-  transform: rotate(-3deg);
-  transform-origin: right bottom;
-  letter-spacing: 0.02em;
 }
 
 /* ---------------------------------------------
@@ -589,8 +497,6 @@
     grid-template-columns: 1fr;
   }
 
-  .pvmo-watermark-left,
-  .pvmo-script-right,
   .pvmo-botanical-right {
     display: none;
   }
@@ -622,19 +528,6 @@
   background: radial-gradient(circle at 50% 10%, #ffffff 0%, #fff5f6 60%, #ffecee 100%) !important;
 }
 
-[data-theme="maroon"] .pvmo-cross-svg {
-  color: #fbcfe8 !important;
-  stroke: #fbcfe8 !important;
-}
-
-[data-theme="maroon"] .pvmo-cross-text {
-  color: #9f1239 !important;
-}
-
-[data-theme="maroon"] .pvmo-script-right {
-  color: #f43f5e !important;
-}
-
 [data-theme="maroon"] .pvmo-badge {
   background: #fdf2f4 !important;
   color: #881337 !important;
@@ -656,10 +549,6 @@
 
 [data-theme="maroon"] .pvmo-philo-card::before {
   background: linear-gradient(90deg, rgba(38, 2, 9, 0.94) 0%, rgba(65, 3, 16, 0.85) 48%, rgba(128, 0, 0, 0.65) 100%) !important;
-}
-
-[data-theme="maroon"] .pvmo-philo-script {
-  color: #fca5a5 !important;
 }
 
 [data-theme="maroon"] .pvmo-vm-card {

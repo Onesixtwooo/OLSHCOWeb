@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -14,18 +15,17 @@ class AuditAndUploadTest extends TestCase
 
     public function test_admin_actions_are_recorded_and_visible_to_admins(): void
     {
+        Notification::fake();
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->postJson('/admin/users', [
             'name' => 'Editor',
             'email' => 'editor@example.com',
             'role' => 'editor',
-            'password' => 'a-secure-password',
-            'password_confirmation' => 'a-secure-password',
         ])->assertCreated();
 
-        $this->assertDatabaseHas('audit_logs', ['action' => 'user.created', 'user_id' => $admin->id]);
-        $this->actingAs($admin)->getJson('/admin/audit-logs')->assertOk()->assertJsonPath('logs.0.action', 'user.created');
+        $this->assertDatabaseHas('audit_logs', ['action' => 'user.invited', 'user_id' => $admin->id]);
+        $this->actingAs($admin)->getJson('/admin/audit-logs')->assertOk()->assertJsonPath('logs.0.action', 'user.invited');
     }
 
     public function test_uploads_require_verified_content_types_and_use_generated_names(): void

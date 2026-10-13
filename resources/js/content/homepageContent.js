@@ -82,8 +82,6 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
     title: 'Philosophy, Vision, Mission & Core Values',
     description: 'The guiding principles and spiritual cornerstone that define our commitment to holistic Christian education at OLSHCO.',
     philosophy: 'OLSHCO believes in holistic education that nurtures the mind, touches the heart, and forms learners rooted in faith, compassion, and service.',
-    philosophyKicker: 'WHOLE PERSON.\nBRIGHTER TOMORROWS.',
-    philosophyScript: 'Mind Heart Faith Service',
     philosophyImage: '/images/pvmo-statue.jpg',
     vision: 'A premier Catholic academic community recognized for transformative education, spiritual depth, and ethical leadership in service of God, country, and society.',
     visionKicker: 'A BRIGHTER TOMORROW',
@@ -97,8 +95,6 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
       { title: 'Leadership', description: 'Empowering for change' },
       { title: 'Service', description: 'A heart for others' },
     ],
-    watermarkText: 'EDUCATION\nIN FAITH\nFOR A MORE\nHUMAN WORLD',
-    scriptText: 'Faith\nForms\nBrighter\nTomorrows',
     footerMark: 'OUR LADY OF THE SACRED HEART COLLEGE',
     footerSub: 'Faith · Formation · A Brighter Tomorrow',
   },
@@ -168,7 +164,7 @@ export const DEFAULT_HOMEPAGE_CONTENT = {
     spotlightEyebrow: 'YOUR NEXT CHAPTER',
     spotlightTitle: 'Start your OLSHCO journey.',
     spotlightDescription: 'A simple, personal path from your first inquiry to becoming part of our faith-filled school community.',
-    spotlightButton: 'Contact Admissions Office',
+    spotlightButton: "Contact Registrar's Office",
     steps: [
       { title: 'Inquiry & Campus Visit', description: "Reach out to our admissions office or visit the campus to learn about OLSHCO's programs, community, and Catholic formation approach." },
       { title: 'Submit Application', description: 'Complete the online application form and submit the required documents including your birth certificate, report card, and baptismal certificate.' },
@@ -218,6 +214,10 @@ export function mergeHomepageContent(saved = {}) {
     return override ?? base;
   };
   const merged = merge(DEFAULT_HOMEPAGE_CONTENT, saved);
+
+  if (merged.admissions.spotlightButton === 'Contact Admissions Office') {
+    merged.admissions.spotlightButton = "Contact Registrar's Office";
+  }
 
   // The About call-to-action always opens the About page. Older saved content may
   // have pointed this button at a social link.

@@ -3573,19 +3573,6 @@ img {
   background: #fecdd3;
 }
 
-[data-theme="maroon"] .pvmo-cross-svg {
-  color: #fbcfe8;
-  stroke: #fbcfe8;
-}
-
-[data-theme="maroon"] .pvmo-cross-text {
-  color: #9f1239;
-}
-
-[data-theme="maroon"] .pvmo-script-right {
-  color: #f43f5e;
-}
-
 [data-theme="maroon"] .pvmo-ref-title {
   color: #4c0519;
 }
@@ -3597,10 +3584,6 @@ img {
 
 [data-theme="maroon"] .pvmo-philo-card::before {
   background: linear-gradient(90deg, rgba(38, 2, 9, 0.94) 0%, rgba(65, 3, 16, 0.85) 48%, rgba(128, 0, 0, 0.65) 100%);
-}
-
-[data-theme="maroon"] .pvmo-philo-script {
-  color: #fca5a5;
 }
 
 [data-theme="maroon"] .pvmo-vm-card {
